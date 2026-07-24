@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "siggy"
+version = "0.5.0"
+description = "AI-powered observability memory layer for SigNoz"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "groq>=0.13.0",
+    "huggingface-hub>=1.0.0",
+    "qdrant-client[local]>=1.12.0",
+    "pydantic>=2.9.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.27.0",
+    "click>=8.1.0",
+    "pyyaml>=6.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-otlp>=1.20.0",
+    "opentelemetry-instrumentation-fastapi>=0.41b0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+siggy = "cli.main:cli"
+
+[project.urls]
+Homepage = "https://github.com/siggy-ai/siggy"
+
+[tool.setuptools.packages.find]
+include = [
+    "cli*",
+    "otel*",
+    "incident*",
+    "knowledge*",
+    "experience*",
+    "graph*",
+    "memory*",
+    "agents*",
+    "telemetry*",
+    "rules*",
+    "models*",
+    "llm*",
+    "utils*",
+]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

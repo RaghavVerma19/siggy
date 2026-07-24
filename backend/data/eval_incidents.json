@@ -1,0 +1,182 @@
+[
+  {
+    "id": "1",
+    "title": "Checkout API latency spike",
+    "summary": "Checkout API became slow because Redis had no free connections in the pool. Users experienced 5-10 second response times during peak traffic.",
+    "root_cause": "Redis connection pool exhausted. Pool size was 64 but concurrent connections peaked at 200+.",
+    "fix": "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+    "affected_services": ["checkout", "cart", "session"],
+    "severity": "critical"
+  },
+  {
+    "id": "2",
+    "title": "Kafka brokers unavailable",
+    "summary": "Kafka brokers went down causing message queue backup. All event-driven services stopped processing. Producer queues filled up and started dropping messages.",
+    "root_cause": "Kafka brokers crashed due to disk space exhaustion. Log retention policy was set too high.",
+    "fix": "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts.",
+    "affected_services": ["order-processor", "notification-service", "analytics"],
+    "severity": "critical"
+  },
+  {
+    "id": "3",
+    "title": "CPU spike in payment service",
+    "summary": "Payment service CPU usage hit 100% causing request timeouts. The service was stuck in an infinite retry loop calling a downstream API.",
+    "root_cause": "Infinite retry loop in payment gateway client. Exponential backoff was not implemented. Each failed request spawned 3 retries.",
+    "fix": "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+    "affected_services": ["payment", "billing"],
+    "severity": "high"
+  },
+  {
+    "id": "4",
+    "title": "Database connection timeout",
+    "summary": "Primary PostgreSQL database became unreachable. All services experienced connection timeouts. Read replicas continued working but lagged behind.",
+    "root_cause": "Database connection pool maxed out at 100 connections. Long-running analytical queries were holding connections for minutes.",
+    "fix": "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+    "affected_services": ["api-gateway", "user-service", "order-service"],
+    "severity": "critical"
+  },
+  {
+    "id": "5",
+    "title": "Worker pods OOM killed",
+    "summary": "Background worker pods were repeatedly OOM killed by Kubernetes. Job processing stopped and queue depth grew to millions.",
+    "root_cause": "Memory leak in image processing worker. Large images were not being garbage collected. Heap grew to 4GB before OOM.",
+    "fix": "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+    "affected_services": ["image-processor", "media-service"],
+    "severity": "high"
+  },
+  {
+    "id": "6",
+    "title": "Redis timeout in session service",
+    "summary": "Session service started timing out on all Redis calls. Users were getting logged out randomly. Session lookup latency went from 2ms to 5000ms.",
+    "root_cause": "Redis cluster node failure caused connection pool saturation. Failover took 45 seconds. During failover, all connections were retrying simultaneously.",
+    "fix": "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+    "affected_services": ["session", "auth", "user-profile"],
+    "severity": "critical"
+  },
+  {
+    "id": "7",
+    "title": "Kafka consumer lag spike",
+    "summary": "Kafka consumer lag grew from 0 to 10 million messages in 10 minutes. Downstream services were processing stale data. Alerts fired for data freshness.",
+    "root_cause": "Consumer group rebalance storm. A buggy consumer was frequently joining and leaving the group, triggering repeated rebalances.",
+    "fix": "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+    "affected_services": ["analytics", "search-indexer", "notification"],
+    "severity": "high"
+  },
+  {
+    "id": "8",
+    "title": "API gateway 502 errors",
+    "summary": "API gateway started returning 502 Bad Gateway for 30% of requests. All upstream services were healthy. Load balancer health checks were passing.",
+    "root_cause": "SSL certificate expired on internal service mesh. Gateway could not establish TLS connections to upstream services.",
+    "fix": "Renew SSL certificates. Implement automated certificate rotation. Add certificate expiry monitoring with 7-day advance alerts.",
+    "affected_services": ["api-gateway", "all-internal-services"],
+    "severity": "critical"
+  },
+  {
+    "id": "9",
+    "title": "Disk space exhaustion on Kafka",
+    "summary": "Kafka brokers ran out of disk space. New messages were being rejected. Existing consumers could still read but producers were failing.",
+    "root_cause": "Log retention set to 30 days for a high-throughput topic. Disk usage grew beyond 95% and brokers entered read-only mode.",
+    "fix": "Reduce log retention to 7 days. Add disk usage alerts at 80% threshold. Move to larger disks. Implement tiered storage.",
+    "affected_services": ["kafka", "order-events", "user-events"],
+    "severity": "critical"
+  },
+  {
+    "id": "10",
+    "title": "Memory leak in payment worker",
+    "summary": "Payment processing worker memory grew from 500MB to 3GB over 6 hours. Worker was eventually OOM killed. Payment processing halted for 30 minutes.",
+    "root_cause": "Database connection objects not being closed properly in error paths. Each failed transaction leaked a connection object.",
+    "fix": "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+    "affected_services": ["payment-worker", "transaction-processor"],
+    "severity": "critical"
+  },
+  {
+    "id": "11",
+    "title": "PostgreSQL slow queries",
+    "summary": "Application response time degraded from 100ms to 5 seconds. Database CPU was at 100%. All queries were running slow, not just specific ones.",
+    "root_cause": "Missing index on orders table. A new feature added a query filtering by status without creating an index. Full table scan on 10M rows.",
+    "fix": "Create index on orders(status, created_at). Add query performance monitoring. Implement index review in PR process.",
+    "affected_services": ["order-service", "api-gateway"],
+    "severity": "high"
+  },
+  {
+    "id": "12",
+    "title": "Kubernetes pod scheduling failures",
+    "summary": "New pods were stuck in Pending state. Existing pods continued running but no new deployments were possible. Scaling was blocked.",
+    "root_cause": "Node resource fragmentation. Most nodes had 2GB free RAM but pods needed 4GB contiguous. No node had enough contiguous resources.",
+    "fix": "Implement pod defragmentation. Use node affinity rules. Add resource request limits. Consider overprovisioning with low-priority pods.",
+    "affected_services": ["deployment-system", "all-new-deployments"],
+    "severity": "high"
+  },
+  {
+    "id": "13",
+    "title": "Redis cluster split-brain",
+    "summary": "Two different Redis masters were serving writes for the same data. Clients connected to different masters got inconsistent data. Cache corruption detected.",
+    "root_cause": "Network partition between Redis nodes. Cluster failed to properly elect single master. Both nodes promoted themselves.",
+    "fix": "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health.",
+    "affected_services": ["cache", "session", "rate-limiter"],
+    "severity": "critical"
+  },
+  {
+    "id": "14",
+    "title": "Kafka topic partition unbalanced",
+    "summary": "One Kafka partition was receiving 10x more messages than others. Consumer for that partition was overloaded while others were idle.",
+    "root_cause": "Producer using sticky partitioning with a hot key. All messages with the same user_id went to the same partition.",
+    "fix": "Implement key salting. Use custom partitioner with round-robin. Redistribute partition keys. Consider increasing partition count.",
+    "affected_services": ["event-processor", "analytics"],
+    "severity": "medium"
+  },
+  {
+    "id": "15",
+    "title": "Database replication lag",
+    "summary": "Read replicas were 30 seconds behind primary. Users saw stale data after writes. Read-after-write consistency was broken.",
+    "root_cause": "Large bulk insert operations overwhelming replication. A batch job inserting 1M rows caused replication lag spike.",
+    "fix": "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts.",
+    "affected_services": ["user-service", "product-catalog"],
+    "severity": "high"
+  },
+  {
+    "id": "16",
+    "title": "Redis pub/sub message loss",
+    "summary": "Real-time notifications stopped working. Users were not receiving live updates. Redis pub/sub subscribers were not getting messages.",
+    "root_cause": "Redis pub/sub is fire-and-forget. During network blip, disconnected subscribers lost all published messages permanently.",
+    "fix": "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries.",
+    "affected_services": ["notification-service", "real-time-updates"],
+    "severity": "high"
+  },
+  {
+    "id": "17",
+    "title": "Circuit breaker cascade",
+    "summary": "Service A called Service B which called Service C. Service C was slow, causing Service B's circuit breaker to open, which caused Service A's to open too.",
+    "root_cause": "All services had the same circuit breaker timeout of 5 seconds. No cascading fallback. No bulkhead isolation between services.",
+    "fix": "Implement different timeout levels per service. Add bulkhead pattern. Implement fallback responses. Add circuit breaker dashboards.",
+    "affected_services": ["order-service", "inventory-service", "payment-service"],
+    "severity": "critical"
+  },
+  {
+    "id": "18",
+    "title": "Kafka producer backpressure",
+    "summary": "Kafka producers started buffering messages in memory. Application heap grew rapidly. GC pauses increased to 10 seconds. Producer throughput dropped to zero.",
+    "root_cause": "Kafka broker was slow to acknowledge writes. Producer buffer was full. Blocking send was used instead of async. Backpressure propagated to application.",
+    "fix": "Switch to async producer with callback. Increase buffer.memory to 64MB. Add producer metrics monitoring. Implement backpressure-aware flow control.",
+    "affected_services": ["event-producer", "data-pipeline"],
+    "severity": "high"
+  },
+  {
+    "id": "19",
+    "title": "PostgreSQL lock contention",
+    "summary": "Database queries were timing out waiting for locks. Multiple services were trying to update the same rows. Deadlock errors appeared in logs.",
+    "root_cause": "Two services updating user_balance table simultaneously without proper transaction isolation. Long-held row locks caused cascading timeouts.",
+    "fix": "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths.",
+    "affected_services": ["payment-service", "wallet-service", "account-service"],
+    "severity": "critical"
+  },
+  {
+    "id": "20",
+    "title": "Redis memory fragmentation",
+    "summary": "Redis used 4GB RAM but only stored 1GB of data. Evictions started happening despite having apparent free memory. Performance degraded significantly.",
+    "root_cause": "High churn rate of small objects caused memory fragmentation. Redis allocator was not releasing freed memory back to OS.",
+    "fix": "Enable active-defrag. Set activedefrag yes in config. Restart Redis during low-traffic window. Monitor mem_fragmentation_ratio.",
+    "affected_services": ["cache", "session-store"],
+    "severity": "medium"
+  }
+]

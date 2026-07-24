@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siggy — Operational Memory for Your Infrastructure</title>
+  <meta name="description" content="AI-powered incident investigation that learns from every fix. Built on SigNoz.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ─── Navigation ─── -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">siggy</a>
+      <div class="nav-links">
+        <a href="#features" class="nav-pill">Features</a>
+        <a href="#how-it-works" class="nav-pill">How It Works</a>
+        <a href="#cli" class="nav-pill">CLI</a>
+        <a href="#install" class="nav-pill">Install</a>
+      </div>
+      <a href="https://github.com/signoz/siggy" class="nav-pill ghost" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ─── -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">v0.5.0 · MIT License</div>
+      <h1 class="hero-title">Operational memory<br>for your infrastructure</h1>
+      <p class="hero-sub">AI-powered incident investigation that learns from every fix.<br>Built on SigNoz.</p>
+
+      <div class="install-pill" id="install-pill" onclick="copyInstall()">
+        <span class="install-icon">&gt;</span>
+        <span class="install-text" id="install-text">pip install siggy</span>
+        <span class="install-copy" id="install-copy">copy</span>
+      </div>
+
+      <div class="hero-stats">
+        <span class="stat-pill">36ms avg response</span>
+        <span class="stat-pill">23 failure types</span>
+        <span class="stat-pill">9 CLI commands</span>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 8l5 5 5-5"/></svg>
+    </div>
+  </section>
+
+  <!-- ─── Features ─── -->
+  <section class="section section--gray" id="features">
+    <div class="container">
+      <h2 class="section-title">Everything you need to remember</h2>
+      <p class="section-sub">Siggy combines vector memory, knowledge graphs, and operational experience<br>into a single retrieval pipeline.</p>
+
+      <div class="features-grid">
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+          </div>
+          <h3 class="feature-title">Vector Memory</h3>
+          <p class="feature-desc">Retrieves similar past incidents from Qdrant vector search across your entire operational history.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M5 8v4l7 4M19 8v4l-7 4"/></svg>
+          </div>
+          <h3 class="feature-title">Knowledge Graph</h3>
+          <p class="feature-desc">Expands context through services, components, failure types, and their operational relationships.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <h3 class="feature-title">Experience Engine</h3>
+          <p class="feature-desc">Ranks fixes using historical success rates, resolution times, and engineer feedback.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>
+          </div>
+          <h3 class="feature-title">Auto-Instrumentation</h3>
+          <p class="feature-desc">Wraps any Python app with OpenTelemetry. Zero code changes. One command.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          </div>
+          <h3 class="feature-title">Explainable Recommendations</h3>
+          <p class="feature-desc">Returns root cause, fix, confidence, and evidence — not just a text answer.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12h8"/></svg>
+          </div>
+          <h3 class="feature-title">Graceful Degradation</h3>
+          <p class="feature-desc">Works without external LLMs, without Qdrant Docker, without a SigNoz API key.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── How It Works ─── -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <h2 class="section-title">How Siggy works</h2>
+      <p class="section-sub">Six steps from telemetry to explainable recommendation.</p>
+
+      <div class="flow">
+        <div class="flow-step fade-in">
+          <div class="flow-pill">Telemetry</div>
+          <p class="flow-label">Your app sends traces to SigNoz</p>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step fade-in">
+          <div class="flow-pill">Normalize</div>
+          <p class="flow-label">Incident becomes a structured KnowledgeObject</p>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step fade-in">
+          <div class="flow-pill">Retrieve</div>
+          <p class="flow-label">Vector search finds similar past incidents</p>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step fade-in">
+          <div class="flow-pill">Expand</div>
+          <p class="flow-label">Graph adds related services and patterns</p>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step fade-in">
+          <div class="flow-pill">Rank</div>
+          <p class="flow-label">Experience engine scores by historical outcomes</p>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step fade-in">
+          <div class="flow-pill primary">Recommend</div>
+          <p class="flow-label">Explainable fix returned to SigNoz</p>
+        </div>
+      </div>
+
+      <p class="flow-note">Engineers record outcomes. Future recommendations improve.</p>
+    </div>
+  </section>
+
+  <!-- ─── CLI Showcase ─── -->
+  <section class="section section--gray" id="cli">
+    <div class="container">
+      <h2 class="section-title">Nine commands. One sidecar.</h2>
+      <p class="section-sub">A CLI that works like a senior SRE sitting next to you.</p>
+
+      <div class="cli-layout">
+        <div class="terminal fade-in">
+          <div class="terminal-bar">
+            <span class="terminal-dot"></span>
+            <span class="terminal-dot"></span>
+            <span class="terminal-dot"></span>
+          </div>
+          <pre class="terminal-code" id="terminal-code"></pre>
+        </div>
+
+        <div class="commands-list fade-in">
+          <div class="cmd-item" data-cmd="init">
+            <span class="cmd-name">siggy init</span>
+            <span class="cmd-desc">Connect to SigNoz, configure memory</span>
+          </div>
+          <div class="cmd-item" data-cmd="quickstart">
+            <span class="cmd-name">siggy quickstart</span>
+            <span class="cmd-desc">One-command setup, auto-detects everything</span>
+          </div>
+          <div class="cmd-item" data-cmd="instrument">
+            <span class="cmd-name">siggy instrument</span>
+            <span class="cmd-desc">Auto-instrument any Python app with OTel</span>
+          </div>
+          <div class="cmd-item" data-cmd="watch">
+            <span class="cmd-name">siggy watch</span>
+            <span class="cmd-desc">Sidecar mode, enriches alerts with memory</span>
+          </div>
+          <div class="cmd-item" data-cmd="serve">
+            <span class="cmd-name">siggy serve</span>
+            <span class="cmd-desc">Start API server + sidecar</span>
+          </div>
+          <div class="cmd-item" data-cmd="up">
+            <span class="cmd-name">siggy up</span>
+            <span class="cmd-desc">All-in-one: server + sidecar + your app</span>
+          </div>
+          <div class="cmd-item" data-cmd="investigate">
+            <span class="cmd-name">siggy investigate</span>
+            <span class="cmd-desc">Manual investigation through memory pipeline</span>
+          </div>
+          <div class="cmd-item" data-cmd="status">
+            <span class="cmd-name">siggy status</span>
+            <span class="cmd-desc">System health and connection checks</span>
+          </div>
+          <div class="cmd-item" data-cmd="demo">
+            <span class="cmd-name">siggy demo</span>
+            <span class="cmd-desc">Ready-to-go demo, no SigNoz needed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── By the Numbers ─── -->
+  <section class="section" id="numbers">
+    <div class="container">
+      <h2 class="section-title">Built for production</h2>
+      <p class="section-sub">Battle-tested taxonomy, real benchmarks, measurable performance.</p>
+
+      <div class="numbers-grid">
+        <div class="number-card fade-in">
+          <span class="number-value">23</span>
+          <span class="number-label">failure types</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">21</span>
+          <span class="number-label">fix types</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">30</span>
+          <span class="number-label">benchmark cases</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">20+</span>
+          <span class="number-label">API endpoints</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">36<span class="number-unit">ms</span></span>
+          <span class="number-label">avg response</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">5</span>
+          <span class="number-label">graph node types</span>
+        </div>
+      </div>
+
+      <div class="tech-stack fade-in">
+        <span class="tech-pill">Python</span>
+        <span class="tech-pill">FastAPI</span>
+        <span class="tech-pill">Qdrant</span>
+        <span class="tech-pill">SigNoz</span>
+        <span class="tech-pill">OpenTelemetry</span>
+        <span class="tech-pill">SQLite</span>
+        <span class="tech-pill">Click</span>
+        <span class="tech-pill">Pydantic</span>
+        <span class="tech-pill">GROQ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Install ─── -->
+  <section class="section section--blue" id="install">
+    <div class="container">
+      <h2 class="section-title">Get started in 30 seconds</h2>
+      <p class="section-sub">Three paths. Pick the one that fits.</p>
+
+      <div class="paths-grid">
+        <div class="path-card fade-in">
+          <div class="path-tag">Quickstart</div>
+          <p class="path-desc">Auto-detects Docker, Qdrant, SigNoz, and GROQ. Configures everything.</p>
+          <div class="path-code">siggy quickstart</div>
+        </div>
+        <div class="path-card fade-in">
+          <div class="path-tag">Step by step</div>
+          <p class="path-desc">Full control over each connection and configuration.</p>
+          <div class="path-code">siggy init &amp;&amp; siggy serve</div>
+        </div>
+        <div class="path-card fade-in">
+          <div class="path-tag">Demo mode</div>
+          <p class="path-desc">No SigNoz or Docker required. Just Python.</p>
+          <div class="path-code">siggy demo</div>
+        </div>
+      </div>
+
+      <p class="install-note">Requires Python 3.10+ and pip</p>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span class="footer-logo">siggy</span>
+      <span class="footer-text">MIT License</span>
+      <span class="footer-text">Built for <a href="https://signoz.io" target="_blank" rel="noopener" class="footer-link">SigNoz</a></span>
+      <a href="https://github.com/signoz/siggy" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
