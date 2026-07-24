@@ -210,19 +210,7 @@ body {
   letter-spacing: 0.1px;
 }
 
-.hero-scroll {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--text-tertiary);
-  animation: bounce 2s ease infinite;
-}
 
-@keyframes bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(6px); }
-}
 
 /* ─── Sections ─── */
 .section {
