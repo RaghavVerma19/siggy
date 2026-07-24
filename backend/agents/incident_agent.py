@@ -11,7 +11,14 @@ from utils.fallbacks import analyze_incident_fallback
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+    return _client
 
 
 class IncidentAgent:
@@ -50,7 +57,7 @@ class IncidentAgent:
         )
 
         try:
-            response = client.chat.completions.create(
+            response = _get_client().chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {

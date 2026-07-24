@@ -78,6 +78,57 @@ def init(url: str, mcp_url: str, otlp: str, api_key: str, backend_url: str):
     click.echo("  Run 'siggy status' to check all connections.")
 
 
+@cli.command()
+def setup():
+    """Configure API keys and connections interactively.
+
+    Prompts for any missing keys (GROQ, SigNoz) and validates them.
+    Safe to run multiple times — only updates what's missing or changed.
+    """
+    click.echo("Siggy Setup")
+    click.echo("=" * 40)
+
+    config = SiggyConfig.load()
+
+    # Check GROQ
+    groq_key = os.getenv("GROQ_API_KEY", "")
+    if not groq_key:
+        env_path = Path(__file__).parent.parent / ".env"
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith("GROQ_API_KEY=") and not line.endswith("your-groq-api-key-here"):
+                    groq_key = line.split("=", 1)[1]
+                    os.environ["GROQ_API_KEY"] = groq_key
+                    break
+
+    if groq_key:
+        click.echo(f"  [OK] GROQ_API_KEY already configured ({groq_key[:8]}...)")
+    else:
+        key = _prompt_groq_key()
+        if key:
+            _save_env_key("GROQ_API_KEY", key)
+            os.environ["GROQ_API_KEY"] = key
+            click.echo("  [OK] Saved to .env")
+
+    # Check SigNoz
+    if config.signoz.api_key:
+        click.echo(f"  [OK] SIGNOZ_API_KEY already configured ({config.signoz.api_key[:8]}...)")
+    else:
+        key = _prompt_signoz_key(config.signoz.url)
+        if key:
+            config.signoz.api_key = key
+            config.save()
+            os.environ["SIGNOZ_API_KEY"] = key
+            click.echo("  [OK] Saved to .siggy.yaml")
+
+    click.echo()
+    click.echo("=" * 40)
+    click.echo("Setup complete!")
+    click.echo()
+    click.echo("  Start Siggy:   siggy serve")
+    click.echo("  Instrument:    siggy instrument python app.py")
+
+
 def _check_signoz(config: SiggyConfig) -> bool:
     import httpx
 
@@ -109,6 +160,127 @@ def _prompt_api_key(signoz_url: str) -> str:
     click.echo()
     key = click.prompt("  API key (or press Enter to skip)", default="", show_default=False)
     return key.strip()
+
+
+def _save_env_key(key: str, value: str):
+    """Save a key-value pair to backend/.env, creating or updating as needed."""
+    env_path = Path(__file__).parent.parent / ".env"
+    lines = []
+    found = False
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            if line.startswith(f"{key}="):
+                lines.append(f"{key}={value}")
+                found = True
+            else:
+                lines.append(line)
+    if not found:
+        lines.append(f"{key}={value}")
+    env_path.write_text("\n".join(lines) + "\n")
+
+
+def _validate_groq_key(key: str) -> tuple[bool, str]:
+    """Validate a GROQ API key by making a test request."""
+    try:
+        from groq import Groq
+        c = Groq(api_key=key)
+        c.models.list()
+        return True, "GROQ API key is valid"
+    except Exception as e:
+        msg = str(e)
+        if "invalid_api_key" in msg.lower() or "401" in msg:
+            return False, "Invalid GROQ API key"
+        return True, "Key appears valid (connection check inconclusive)"
+
+
+def _validate_signoz_key(key: str, url: str = "http://localhost:8080") -> bool:
+    """Validate a SigNoz API key."""
+    try:
+        import httpx
+        r = httpx.get(
+            f"{url}/api/v2/rules",
+            headers={"SIGNOZ-API-KEY": key},
+            timeout=5,
+        )
+        return r.status_code < 400
+    except Exception:
+        return False
+
+
+def _prompt_groq_key() -> str:
+    """Interactively prompt for GROQ_API_KEY. Returns the key (may be empty)."""
+    click.echo()
+    click.echo("  GROQ_API_KEY \u2014 powers LLM incident analysis")
+    click.echo("  Get yours at: https://console.groq.com/keys")
+    click.echo()
+    key = click.prompt("  Paste your GROQ API key", hide_input=True)
+    key = key.strip()
+    if not key:
+        click.echo("  [..] Skipped \u2014 LLM features will use rule-based fallback")
+        return ""
+    if not key.startswith("gsk_"):
+        click.echo("  [!!] Key doesn't look like a GROQ key (should start with gsk_)")
+        if not click.confirm("  Continue anyway?"):
+            return _prompt_groq_key()
+    click.echo("  [OK] GROQ key received")
+    return key
+
+
+def _prompt_signoz_key(signoz_url: str = "http://localhost:8080") -> str:
+    """Interactively prompt for SIGNOZ_API_KEY. Returns the key (may be empty)."""
+    click.echo()
+    click.echo("  SIGNOZ_API_KEY \u2014 enables dashboard + saved view auto-creation")
+    click.echo(f"  In SigNoz: {signoz_url}/settings/service-accounts")
+    click.echo("  Create a service account (Admin role) \u2192 generate API key")
+    click.echo()
+    key = click.prompt("  Paste your SigNoz API key (or press Enter to skip)", default="", show_default=False)
+    key = key.strip()
+    if not key:
+        click.echo("  [..] Skipped \u2014 Siggy works without it, just no auto-dashboards")
+        return ""
+    config = SiggyConfig.load()
+    if _validate_signoz_key(key, signoz_url):
+        click.echo("  [OK] SigNoz key validated \u2014 dashboard integration enabled")
+    else:
+        click.echo("  [!!] Key validation failed (SigNoz may not be running)")
+        if not click.confirm("  Save anyway?"):
+            return _prompt_signoz_key(signoz_url)
+    return key
+
+
+def _ensure_keys() -> SiggyConfig:
+    """Check for required API keys. Prompt for any that are missing. Returns updated config."""
+    from dotenv import load_dotenv as _ld
+    _ld(Path(__file__).parent.parent / ".env", override=True)
+
+    groq_key = os.getenv("GROQ_API_KEY", "")
+    config = SiggyConfig.load()
+    signoz_key = config.signoz.api_key
+
+    if groq_key and signoz_key:
+        return config
+
+    click.echo()
+    click.echo("Siggy needs API keys to run.")
+    click.echo("You can reconfigure anytime with: siggy setup")
+    click.echo()
+
+    if not groq_key:
+        key = _prompt_groq_key()
+        if key:
+            _save_env_key("GROQ_API_KEY", key)
+            os.environ["GROQ_API_KEY"] = key
+            click.echo("  [OK] Saved to .env")
+
+    if not signoz_key:
+        key = _prompt_signoz_key(config.signoz.url)
+        if key:
+            config.signoz.api_key = key
+            config.save()
+            os.environ["SIGNOZ_API_KEY"] = key
+            click.echo("  [OK] Saved to .siggy.yaml")
+
+    return config
 
 
 def _check_mcp(config: SiggyConfig):
@@ -658,7 +830,7 @@ def serve(host: str, port: int):
     Runs the FastAPI backend with the knowledge pipeline, experience engine,
     graph context, and the alert-watching sidecar.
     """
-    config = SiggyConfig.load()
+    config = _ensure_keys()
 
     os.environ["SIGNOZ_MCP_URL"] = config.signoz.mcp_url
     os.environ["SIGNOZ_API_KEY"] = config.signoz.api_key
@@ -708,7 +880,7 @@ def up(app_command: str | None, service: str | None, host: str, port: int):
     import httpx
     import threading
 
-    config = SiggyConfig.load()
+    config = _ensure_keys()
     os.environ["SIGNOZ_MCP_URL"] = config.signoz.mcp_url
     os.environ["SIGNOZ_API_KEY"] = config.signoz.api_key
     os.environ["SIGNOZ_URL"] = config.signoz.url

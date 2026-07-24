@@ -10,7 +10,15 @@ from telemetry.summarizer import summarize_telemetry
 from utils.fallbacks import infer_service
 
 load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+    return _client
 
 
 class InvestigatorAgent:
@@ -96,7 +104,7 @@ class InvestigatorAgent:
         if heuristic and any(heuristic == svc.lower() for svc in service_names):
             return heuristic
         try:
-            response = client.chat.completions.create(
+            response = _get_client().chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": "You are a service classifier. Return ONLY the service name."},

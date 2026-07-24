@@ -5,7 +5,15 @@ from dotenv import load_dotenv
 from utils.fallbacks import summarize_telemetry_fallback
 
 load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+    return _client
 
 SUMMARIZE_PROMPT = """You are an SRE summarizer. Convert raw observability data into a concise incident summary.
 
@@ -91,7 +99,7 @@ def summarize_telemetry(raw_data: dict) -> dict:
     )
 
     try:
-        response = client.chat.completions.create(
+        response = _get_client().chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": "You are an SRE summarizer. Return only valid JSON."},
