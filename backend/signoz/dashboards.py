@@ -3,10 +3,13 @@
 Uses direct SigNoz REST API (SIGNOZ-API-KEY header) instead of MCP,
 because the MCP server in HTTP mode doesn't forward auth to SigNoz.
 
-SigNoz v5 API format (captured from UI):
+SigNoz v1 dashboard widget format (from Terraform provider + UI traffic):
 - Dashboard create: POST /api/v1/dashboards {title, description}
-- Dashboard update: PUT  /api/v1/dashboards/{id} {widgets, layout}
+- Dashboard update: PUT  /api/v1/dashboards/{id} {title, description, widgets, layout}
 - View create:      POST /api/v1/explorer/views {name, sourcePage, compositeQuery, extraData}
+
+Critical: each widget MUST include panelTypes ("graph", "list", "value", etc.)
+to avoid SigNoz returning "unknown request type ''".
 """
 
 from __future__ import annotations
@@ -29,81 +32,376 @@ def _headers(api_key: str) -> dict[str, str]:
     }
 
 
-# --- Widget query builders (SigNoz v5 dashboard widget format) ---
+# ---------------------------------------------------------------------------
+# Widget builders — complete SigNoz v1 dashboard widget payloads
+# ---------------------------------------------------------------------------
 
-def _make_widget_query(group_by: str | None = None) -> dict:
-    """Build a dashboard widget query filtering siggy.recommendation spans."""
-    q: dict = {
-        "queryType": "builder",
-        "builder": {
-            "queryData": [
-                {
-                    "dataSource": "traces",
-                    "queryName": "A",
-                    "aggregateOperator": "count",
-                    "aggregateAttribute": {
-                        "key": "operation.name",
-                        "dataType": "string",
-                    },
-                    "filters": {
-                        "items": [
-                            {
-                                "key": {"key": "name", "dataType": "string"},
-                                "op": "=",
-                                "value": "siggy.recommendation",
-                            }
-                        ]
-                    },
-                }
-            ]
-        },
+def _base_widget(panel_id: str, title: str, description: str, panel_type: str = "graph") -> dict:
+    """Return the base widget dict with all required SigNoz metadata fields."""
+    return {
+        "id": panel_id,
+        "title": title,
+        "description": description,
+        "panelTypes": panel_type,
+        "selectedLogFields": [],
+        "selectedTracesFields": [],
+        "thresholds": [],
+        "columnUnits": {},
+        "yAxisUnit": "none",
+        "softMax": None,
+        "softMin": None,
+        "fillSpans": False,
+        "isStacked": False,
+        "stackedBarChart": False,
+        "nullZeroValues": "zero",
+        "opacity": "1",
+        "bucketCount": 30,
+        "bucketWidth": 0,
+        "mergeAllActiveQueries": False,
     }
-    if group_by:
-        q["builder"]["queryData"][0]["groupBy"] = [
-            {"key": group_by, "dataType": "string"}
-        ]
+
+
+def _make_trace_query(
+    query_name: str = "A",
+    aggregate_operator: str = "count",
+    aggregate_key: str = "operation.name",
+    aggregate_data_type: str = "string",
+    filters: list[dict] | None = None,
+    group_by: list[dict] | None = None,
+    order_by: list[dict] | None = None,
+    limit: int = 100,
+) -> dict:
+    """Build a single queryData entry for traces."""
+    q: dict = {
+        "queryName": query_name,
+        "dataSource": "traces",
+        "aggregateOperator": aggregate_operator,
+        "aggregateAttribute": {
+            "key": aggregate_key,
+            "dataType": aggregate_data_type,
+        },
+        "filters": {"items": filters or []},
+        "groupBy": group_by or [],
+        "orderBy": order_by or [],
+        "limit": limit,
+        "stepInterval": 60,
+        "expression": query_name,
+        "disabled": False,
+    }
     return q
 
 
-# --- Dashboard widgets + layout ---
+def _make_log_query(
+    query_name: str = "A",
+    filters: list[dict] | None = None,
+    group_by: list[dict] | None = None,
+    order_by: list[dict] | None = None,
+    limit: int = 50,
+) -> dict:
+    """Build a single queryData entry for logs."""
+    return {
+        "queryName": query_name,
+        "dataSource": "logs",
+        "aggregateOperator": "count",
+        "aggregateAttribute": {
+            "key": "ts",
+            "dataType": "string",
+        },
+        "filters": {"items": filters or []},
+        "groupBy": group_by or [],
+        "orderBy": order_by or [{"key": "timestamp", "dataType": "string", "order": "DESC"}],
+        "limit": limit,
+        "stepInterval": 60,
+        "expression": query_name,
+        "disabled": False,
+    }
 
-DASHBOARD_WIDGETS = [
-    {
-        "id": "panel-recent-recs",
-        "title": "Recent Recommendations",
-        "description": "Latest memory-enriched recommendations from Siggy",
-        "query": _make_widget_query(),
-        "timePreferency": "GLOBAL",
-    },
-    {
-        "id": "panel-by-service",
-        "title": "Recommendations by Service",
-        "description": "How many recommendations per service",
-        "query": _make_widget_query("siggy.service"),
-        "timePreferency": "GLOBAL",
-    },
-    {
-        "id": "panel-confidence",
-        "title": "Confidence Distribution",
-        "description": "Distribution of recommendation confidence scores",
-        "query": _make_widget_query("siggy.confidence"),
-        "timePreferency": "GLOBAL",
-    },
-    {
-        "id": "panel-failures",
-        "title": "Top Failure Types",
-        "description": "Most common failure types detected by Siggy",
-        "query": _make_widget_query("siggy.failure_type"),
-        "timePreferency": "GLOBAL",
-    },
-]
 
-DASHBOARD_LAYOUT = [
-    {"h": 4, "i": "panel-recent-recs", "w": 12, "x": 0, "y": 0},
-    {"h": 4, "i": "panel-by-service", "w": 6, "x": 0, "y": 4},
-    {"h": 4, "i": "panel-confidence", "w": 6, "x": 6, "y": 4},
-    {"h": 4, "i": "panel-failures", "w": 12, "x": 0, "y": 8},
-]
+def _build_graph_widget(
+    panel_id: str,
+    title: str,
+    description: str,
+    data_source: str = "traces",
+    query_data: list[dict] | None = None,
+    formulas: list[dict] | None = None,
+    height: int = 4,
+    width: int = 6,
+    x: int = 0,
+    y: int = 0,
+) -> tuple[dict, dict]:
+    """Build a complete graph widget + layout entry."""
+    widget = _base_widget(panel_id, title, description, panel_type="graph")
+    widget["query"] = {
+        "queryType": "builder",
+        "builder": {
+            "queryData": query_data or [],
+            "queryFormulas": formulas or [],
+        },
+        "promql": [],
+        "clickhouse_sql": [],
+    }
+    widget["timePreferance"] = "GLOBAL_TIME"
+    layout = {"h": height, "i": panel_id, "w": width, "x": x, "y": y}
+    return widget, layout
+
+
+def _build_list_widget(
+    panel_id: str,
+    title: str,
+    description: str,
+    data_source: str,
+    query_data: list[dict],
+    height: int = 4,
+    width: int = 12,
+    x: int = 0,
+    y: int = 0,
+) -> tuple[dict, dict]:
+    """Build a complete list (raw rows) widget + layout entry."""
+    widget = _base_widget(panel_id, title, description, panel_type="list")
+    widget["query"] = {
+        "queryType": "builder",
+        "builder": {
+            "queryData": query_data,
+            "queryFormulas": [],
+        },
+        "promql": [],
+        "clickhouse_sql": [],
+    }
+    widget["timePreferance"] = "GLOBAL_TIME"
+    layout = {"h": height, "i": panel_id, "w": width, "x": x, "y": y}
+    return widget, layout
+
+
+# ---------------------------------------------------------------------------
+# Dashboard panels + layout
+# ---------------------------------------------------------------------------
+
+def _build_all_widgets() -> tuple[list[dict], list[dict]]:
+    """Build all dashboard widgets and their layout."""
+    widgets: list[dict] = []
+    layout: list[dict] = []
+    row = 0
+
+    # Row 1: Live service health (request rate + error rate)
+    w, l = _build_graph_widget(
+        "panel-request-rate",
+        "Request Rate by Service",
+        "Number of requests per service over time",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                group_by=[{"key": "service.name", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+            )
+        ],
+        width=6, x=0, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+
+    w, l = _build_graph_widget(
+        "panel-error-rate",
+        "Error Rate by Service",
+        "Number of error spans per service over time",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                filters=[
+                    {"key": {"key": "status_code", "dataType": "string"}, "op": "=", "value": "STATUS_CODE_ERROR"},
+                ],
+                group_by=[{"key": "service.name", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+            )
+        ],
+        width=6, x=6, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+    row += 4
+
+    # Row 2: Latency + Top operations
+    w, l = _build_graph_widget(
+        "panel-p95-latency",
+        "P95 Latency by Service",
+        "95th percentile request duration per service",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="p95",
+                aggregate_key="duration_nano",
+                aggregate_data_type="float64",
+                group_by=[{"key": "service.name", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+            )
+        ],
+        width=6, x=0, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+
+    w, l = _build_graph_widget(
+        "panel-top-operations",
+        "Top Operations",
+        "Most frequently called operations",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                group_by=[{"key": "operation.name", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+                limit=20,
+            )
+        ],
+        width=6, x=6, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+    row += 4
+
+    # Row 3: Siggy recommendations (over time + by service)
+    w, l = _build_graph_widget(
+        "panel-recs-over-time",
+        "Recommendations Over Time",
+        "Memory-enriched recommendations generated by Siggy",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                filters=[
+                    {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
+                ],
+            )
+        ],
+        width=6, x=0, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+
+    w, l = _build_graph_widget(
+        "panel-recs-by-service",
+        "Recommendations by Service",
+        "Which services have the most Siggy recommendations",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                filters=[
+                    {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
+                ],
+                group_by=[{"key": "siggy.service", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+            )
+        ],
+        width=6, x=6, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+    row += 4
+
+    # Row 4: Failure types + confidence
+    w, l = _build_graph_widget(
+        "panel-failures",
+        "Top Failure Types",
+        "Most common failure types detected by Siggy",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                filters=[
+                    {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
+                ],
+                group_by=[{"key": "siggy.failure_type", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+            )
+        ],
+        width=6, x=0, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+
+    w, l = _build_graph_widget(
+        "panel-confidence",
+        "Confidence Distribution",
+        "Distribution of Siggy recommendation confidence scores",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                filters=[
+                    {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
+                ],
+                group_by=[{"key": "siggy.confidence", "dataType": "string"}],
+                order_by=[{"key": "A", "dataType": "number", "order": "DESC"}],
+            )
+        ],
+        width=6, x=6, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+    row += 4
+
+    # Row 5: Raw data — error logs + recent siggy recommendations
+    w, l = _build_list_widget(
+        "panel-error-logs",
+        "Recent Error Logs",
+        "Latest error-level logs from all services",
+        data_source="logs",
+        query_data=[
+            _make_log_query(
+                filters=[
+                    {"key": {"key": "severity_text", "dataType": "string"}, "op": "=", "value": "ERROR"},
+                ],
+                order_by=[{"key": "timestamp", "dataType": "string", "order": "DESC"}],
+                limit=20,
+            )
+        ],
+        height=6, width=6, x=0, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+
+    w, l = _build_list_widget(
+        "panel-recs-list",
+        "Recent Siggy Recommendations",
+        "Latest memory-enriched recommendation spans",
+        data_source="traces",
+        query_data=[
+            _make_trace_query(
+                aggregate_operator="count",
+                aggregate_key="operation.name",
+                aggregate_data_type="string",
+                filters=[
+                    {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
+                ],
+                order_by=[{"key": "timestamp", "dataType": "string", "order": "DESC"}],
+                limit=20,
+            )
+        ],
+        height=6, width=6, x=6, y=row,
+    )
+    widgets.append(w)
+    layout.append(l)
+
+    return widgets, layout
+
+
+DASHBOARD_WIDGETS, DASHBOARD_LAYOUT = _build_all_widgets()
 
 
 # --- Saved view definitions (SigNoz v5 explorer view format) ---
@@ -113,10 +411,7 @@ def _make_view_query(
     signal: str = "traces",
     filter_expr: str = "",
 ) -> dict:
-    """Build the compositeQuery for a saved explorer view.
-
-    Uses expression-based filter (not items array) to match SigNoz v5 format.
-    """
+    """Build the compositeQuery for a saved explorer view."""
     spec: dict = {
         "name": name,
         "signal": signal,
@@ -125,7 +420,6 @@ def _make_view_query(
         "filter": {"expression": filter_expr},
         "having": {"expression": ""},
     }
-
     return {
         "queryType": "builder",
         "panelType": "list",
@@ -205,7 +499,7 @@ def _create_dashboard(signoz_url: str, api_key: str, title: str, description: st
 
 
 def _update_dashboard(signoz_url: str, api_key: str, dash_id: str, title: str, description: str, widgets: list, layout: list) -> dict:
-    """Add widgets and layout to an existing dashboard (preserving title)."""
+    """Add widgets and layout to an existing dashboard."""
     r = httpx.put(
         f"{signoz_url}/api/v1/dashboards/{dash_id}",
         headers=_headers(api_key),
@@ -214,6 +508,20 @@ def _update_dashboard(signoz_url: str, api_key: str, dash_id: str, title: str, d
     )
     r.raise_for_status()
     return r.json()
+
+
+def _delete_dashboard(signoz_url: str, api_key: str, dash_id: str) -> bool:
+    """Delete a dashboard by ID."""
+    try:
+        r = httpx.delete(
+            f"{signoz_url}/api/v1/dashboards/{dash_id}",
+            headers=_headers(api_key),
+            timeout=10,
+        )
+        return r.status_code < 300
+    except Exception as e:
+        logger.debug("Failed to delete dashboard %s: %s", dash_id, e)
+        return False
 
 
 def _list_views(signoz_url: str, api_key: str, source_page: str = "traces") -> list[dict]:
@@ -246,18 +554,16 @@ def _create_view(signoz_url: str, api_key: str, payload: dict) -> str:
 
 # --- Public setup function ---
 
-def setup_siggy_in_signoz(api_key: str = "", signoz_url: str = "") -> dict:
+def setup_siggy_in_signoz(api_key: str = "", signoz_url: str = "", force: bool = False) -> dict:
     """Create the Siggy dashboard and saved views in SigNoz.
 
-    Uses direct REST API with SIGNOZ-API-KEY auth (not MCP).
+    Always updates the dashboard with fresh widget definitions on startup,
+    even if it already exists. This ensures broken panels get fixed.
 
     Args:
         api_key: SigNoz API key. Falls back to SIGNOZ_API_KEY env var.
         signoz_url: SigNoz base URL. Falls back to SIGNOZ_URL env var.
-
-    Flow:
-        1. Check if dashboard exists -> create minimal -> PUT with widgets
-        2. Check if views exist -> create each with correct v5 payload
+        force: If True, delete existing dashboard and recreate from scratch.
 
     Returns:
         dict with status of each operation
@@ -283,22 +589,42 @@ def setup_siggy_in_signoz(api_key: str = "", signoz_url: str = "") -> dict:
                     break
 
         if siggy_dash:
-            dash_id = siggy_dash["id"]
-            results["dashboard"] = "already_exists"
-            logger.info("Siggy dashboard already exists (id=%s)", dash_id)
-        else:
+            dash_id = siggy_dash.get("id", "")
+            if not dash_id:
+                dash_id = siggy_dash.get("data", {}).get("id", "")
+
+            if force and dash_id:
+                _delete_dashboard(signoz_url, api_key, dash_id)
+                siggy_dash = None
+                dash_id = None
+                logger.info("Deleted existing Siggy dashboard for recreation")
+            else:
+                # Always update existing dashboard with fresh widgets
+                _update_dashboard(
+                    signoz_url,
+                    api_key,
+                    dash_id,
+                    DASHBOARD_TITLE,
+                    "Unified Siggy memory layer + live SigNoz observability.",
+                    DASHBOARD_WIDGETS,
+                    DASHBOARD_LAYOUT,
+                )
+                results["dashboard"] = {"id": dash_id, "status": "updated"}
+                logger.info("Updated Siggy dashboard widgets (id=%s)", dash_id)
+
+        if not siggy_dash or force:
             dash_id = _create_dashboard(
                 signoz_url,
                 api_key,
                 DASHBOARD_TITLE,
-                "AI-powered recommendations from Siggy's operational memory.",
+                "Unified Siggy memory layer + live SigNoz observability.",
             )
             _update_dashboard(
                 signoz_url,
                 api_key,
                 dash_id,
                 DASHBOARD_TITLE,
-                "AI-powered recommendations from Siggy's operational memory.",
+                "Unified Siggy memory layer + live SigNoz observability.",
                 DASHBOARD_WIDGETS,
                 DASHBOARD_LAYOUT,
             )
@@ -306,7 +632,7 @@ def setup_siggy_in_signoz(api_key: str = "", signoz_url: str = "") -> dict:
             logger.info("Created Siggy dashboard (id=%s)", dash_id)
     except Exception as e:
         results["errors"].append(f"dashboard: {e}")
-        logger.warning("Failed to create Siggy dashboard: %s", e)
+        logger.warning("Failed to create/update Siggy dashboard: %s", e)
 
     # --- Create saved views ---
     try:

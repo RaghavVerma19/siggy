@@ -116,8 +116,15 @@ async def lifespan(app: FastAPI):
         if setup_result.get("errors"):
             for err in setup_result["errors"]:
                 print(f"SigNoz setup: {err}")
-        else:
-            print("Siggy dashboard + views created in SigNoz")
+        dash_status = setup_result.get("dashboard", {})
+        if isinstance(dash_status, dict):
+            status = dash_status.get("status", "")
+            if status == "updated":
+                print(f"Siggy dashboard updated (id={dash_status.get('id', '')})")
+            elif status == "created":
+                print(f"Siggy dashboard created (id={dash_status.get('id', '')})")
+        elif isinstance(dash_status, str):
+            print(f"Siggy dashboard: {dash_status}")
     except Exception as e:
         print(f"SigNoz dashboard setup skipped: {e}")
 
@@ -134,7 +141,6 @@ async def lifespan(app: FastAPI):
         _sidecar_task = asyncio.create_task(
             _siggysidecar.start_polling(interval=30)
         )
-        print("Siggy sidecar started (polling every 30s)")
     except Exception as e:
         print(f"Warning: Sidecar failed to start: {e}")
 
@@ -164,8 +170,12 @@ def _run_benchmark_on_startup():
 
     try:
         import importlib
-        import sys
         evaluate = importlib.import_module("evaluate")
+    except ModuleNotFoundError:
+        print("Benchmark skipped (evaluate module not installed)")
+        return
+
+    try:
         print("Running benchmark (first boot)...")
         summary = evaluate.evaluate()
         metrics = summary.get("metrics", {})
