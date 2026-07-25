@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 
 name = "siggy-memory"
-version = "0.5.3"
+version = "0.5.4"
 description = "AI-powered observability memory layer for SigNoz"
 readme = "README.md"
 license = {text = "MIT"}

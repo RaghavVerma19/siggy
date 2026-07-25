@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import sqlite3
 import uuid
 from datetime import datetime
@@ -39,6 +40,14 @@ class SiggySidecar:
         self._running = False
         self._tracer = None
         self._setup_otel_tracer()
+
+        from telemetry.mcp_http import MCPHttpClient
+        self._mcp_client = MCPHttpClient(
+            mcp_url=os.getenv("SIGNOZ_MCP_URL", "http://localhost:8000/mcp"),
+            api_key=os.getenv("SIGNOZ_API_KEY", ""),
+            client_name="siggy-sidecar",
+        )
+        self._consecutive_failures = 0
 
     def _setup_otel_tracer(self):
         """Set up OTel tracer for writing recommendation spans to SigNoz."""
@@ -96,22 +105,26 @@ class SiggySidecar:
             await asyncio.sleep(interval)
 
         self._running = False
+        print("Siggy sidecar stopped")
 
     async def _poll_cycle(self):
         """Single poll cycle — fetch alerts from SigNoz via MCP."""
-        from telemetry.mcp_http import MCPHttpClient
-
-        client = MCPHttpClient(client_name="siggy-sidecar")
         try:
-            result = await client.call_tool("signoz_list_alerts", {
+            result = await self._mcp_client.call_tool("signoz_list_alerts", {
                 "silenced": False,
                 "inhibited": False,
             })
             alerts = result.get("alerts", result.get("data", []))
             if not isinstance(alerts, list):
                 return
+            self._consecutive_failures = 0
         except Exception as e:
-            logger.warning("MCP alert fetch failed: %s", e)
+            self._consecutive_failures += 1
+            if self._consecutive_failures <= 2:
+                logger.debug("MCP alert fetch failed (attempt %d): %s", self._consecutive_failures, e)
+            else:
+                logger.warning("MCP alert fetch failed %d times: %s", self._consecutive_failures, e)
+                self._mcp_client.reset()
             return
 
         for alert in alerts:
