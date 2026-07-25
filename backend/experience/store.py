@@ -14,7 +14,9 @@ from experience.models import (
     canonicalize_recommendation_id,
 )
 
-DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "experience.db"
+from utils.paths import siggy_experience_db
+
+DEFAULT_DB_PATH = siggy_experience_db()
 
 
 class ExperienceStore:

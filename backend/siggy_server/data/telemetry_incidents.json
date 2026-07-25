@@ -1,0 +1,47 @@
+[
+  {
+    "id": "t1",
+    "title": "Checkout service high latency from Redis timeout",
+    "summary": "Checkout service p99 latency spiked to 4.8s. Redis connection pool exhausted. Error rate 18%. Users experiencing slow checkout.",
+    "root_cause": "Redis connection pool exhausted. Pool size 64 but concurrent connections peaked at 200+.",
+    "fix": "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30s.",
+    "affected_services": ["checkout", "cart", "session"],
+    "severity": "critical"
+  },
+  {
+    "id": "t2",
+    "title": "Order service OOM killed pods",
+    "summary": "Order processing pods repeatedly OOM killed by Kubernetes. Queue depth growing to millions. Memory leak in image processor.",
+    "root_cause": "Memory leak in image processing worker. Large images not garbage collected. Heap grew to 4GB before OOM.",
+    "fix": "Fix memory leak by explicitly releasing image buffers. Set memory limit to 2GB. Add HPA.",
+    "affected_services": ["order-processor", "image-processor"],
+    "severity": "critical"
+  },
+  {
+    "id": "t3",
+    "title": "Kafka consumer lag spike",
+    "summary": "Kafka consumer group lag increased to 500K messages. Event-driven services stopped processing. Broker disk at 95%.",
+    "root_cause": "Kafka brokers disk space exhaustion due to excessive log retention. Brokers unable to accept new writes.",
+    "fix": "Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts at 80%.",
+    "affected_services": ["order-processor", "notification-service", "analytics"],
+    "severity": "critical"
+  },
+  {
+    "id": "t4",
+    "title": "PostgreSQL connection timeout across services",
+    "summary": "All services experiencing PostgreSQL connection timeouts. Database connection pool maxed at 100 connections. Long-running analytical queries holding connections.",
+    "root_cause": "Database connection pool maxed out. Long-running analytical queries holding connections for minutes.",
+    "fix": "Move analytical queries to read replicas. Increase connection pool to 200. Add 30s query timeout.",
+    "affected_services": ["api-gateway", "user-service", "order-service"],
+    "severity": "critical"
+  },
+  {
+    "id": "t5",
+    "title": "Payment service CPU spike from infinite retry loop",
+    "summary": "Payment service CPU at 100%. Request timeouts across all endpoints. Service stuck in infinite retry loop calling downstream payment gateway.",
+    "root_cause": "Infinite retry loop in payment gateway client. No exponential backoff. Each failed request spawned 3 retries.",
+    "fix": "Add exponential backoff with max 3 retries. Add circuit breaker. Set retry delay to 1s, 2s, 4s.",
+    "affected_services": ["payment", "billing"],
+    "severity": "high"
+  }
+]

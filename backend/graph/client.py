@@ -10,7 +10,9 @@ from typing import Optional
 
 from graph.schema import GraphEdge, GraphNode
 
-DEFAULT_GRAPH_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "graph.db"
+from utils.paths import siggy_graph_db
+
+DEFAULT_GRAPH_DB_PATH = siggy_graph_db()
 
 
 class GraphClient:

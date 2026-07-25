@@ -31,7 +31,7 @@ def build_instrumented_env(
     )
     env["OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED"] = "true"
 
-    backend_dir = str(Path(__file__).parent.parent)
+    backend_dir = str(Path(__file__).resolve().parent.parent)
     existing_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = f"{backend_dir}{os.pathsep}{existing_pythonpath}" if existing_pythonpath else backend_dir
 

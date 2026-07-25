@@ -1,0 +1,74 @@
+[
+  {
+    "id": "demo-1",
+    "title": "demo-api HTTP 500 on /error endpoint",
+    "summary": "Flask demo-api returning HTTP 500 errors on GET /error. Random exceptions include ConnectionRefusedError for Redis, TimeoutError, MemoryError, and ValueError for invalid JSON.",
+    "root_cause": "Unhandled exceptions in /error route. Application raises random errors without try/catch. Redis connection refused when cache layer is down.",
+    "fix": "Add error handling middleware. Check Redis connectivity before cache operations. Implement circuit breaker for downstream dependencies. Add health check for Redis at startup.",
+    "affected_services": ["demo-api"],
+    "severity": "high"
+  },
+  {
+    "id": "demo-2",
+    "title": "demo-api Redis connection refused",
+    "summary": "demo-api traces show ConnectionRefusedError: Redis connection refused on error endpoint. Service cannot reach Redis cache at localhost:6379.",
+    "root_cause": "Redis instance not running or wrong host/port configured. Application attempts cache read without connection pool validation.",
+    "fix": "Verify Redis is running. Update REDIS_URL env var. Add connection retry with exponential backoff. Fall back to in-memory cache when Redis unavailable.",
+    "affected_services": ["demo-api"],
+    "severity": "critical"
+  },
+  {
+    "id": "demo-3",
+    "title": "demo-api request timeout after 30s",
+    "summary": "demo-api returning TimeoutError: Request timeout after 30s. Downstream service or database query exceeding timeout threshold.",
+    "root_cause": "Slow downstream dependency or missing query timeout. Connection pool may be exhausted waiting for available connections.",
+    "fix": "Increase httpx/requests timeout for known slow endpoints. Add query timeout on database connections. Check downstream service health and scale if needed.",
+    "affected_services": ["demo-api"],
+    "severity": "high"
+  },
+  {
+    "id": "demo-4",
+    "title": "demo-api MemoryError unable to allocate",
+    "summary": "demo-api hit MemoryError: Unable to allocate 2GB during request processing. Pod or container may be OOM killed.",
+    "root_cause": "Memory leak or oversized payload processing. Large object allocation without streaming or pagination.",
+    "fix": "Profile memory usage with py-spy. Stream large responses instead of buffering. Set Kubernetes memory limits and enable HPA. Fix leak in request handler.",
+    "affected_services": ["demo-api"],
+    "severity": "critical"
+  },
+  {
+    "id": "demo-5",
+    "title": "demo-api invalid JSON payload ValueError",
+    "summary": "demo-api raising ValueError: Invalid JSON payload on POST requests. Client sending malformed JSON or wrong Content-Type header.",
+    "root_cause": "Missing request body validation. Application parses JSON without schema validation or error handling.",
+    "fix": "Add pydantic/marshmallow request validation. Return HTTP 400 with clear error message for invalid payloads. Log malformed request samples for debugging.",
+    "affected_services": ["demo-api"],
+    "severity": "medium"
+  },
+  {
+    "id": "demo-6",
+    "title": "demo-api intermittent database connection timeout",
+    "summary": "demo-api /flaky endpoint shows intermittent database connection timeout. 30% of requests fail with connection errors.",
+    "root_cause": "Database connection pool exhaustion or network instability. Intermittent failures suggest race condition or pool sizing issue.",
+    "fix": "Increase database connection pool size. Add connection health checks. Implement retry logic with jitter for transient failures.",
+    "affected_services": ["demo-api"],
+    "severity": "high"
+  },
+  {
+    "id": "demo-7",
+    "title": "API gateway 502 bad gateway errors",
+    "summary": "API gateway returning 502 Bad Gateway when upstream demo-api returns 500. Load balancer marking backend as unhealthy.",
+    "root_cause": "Upstream service errors propagate as gateway failures. No graceful degradation when backend is failing.",
+    "fix": "Add retry with circuit breaker at gateway. Configure health check endpoints. Return cached responses for read-only routes during outages.",
+    "affected_services": ["api-gateway", "demo-api"],
+    "severity": "high"
+  },
+  {
+    "id": "demo-8",
+    "title": "SSL certificate expired on demo-api ingress",
+    "summary": "HTTPS requests to demo-api failing with certificate verify failed. TLS certificate expired and not auto-renewed.",
+    "root_cause": "cert-manager or Let's Encrypt renewal failed. Certificate not monitored with expiry alerts.",
+    "fix": "Renew SSL certificates via cert-manager. Set up cert expiry monitoring alerts 30 days before expiration. Verify DNS challenge configuration.",
+    "affected_services": ["demo-api", "ingress"],
+    "severity": "critical"
+  }
+]

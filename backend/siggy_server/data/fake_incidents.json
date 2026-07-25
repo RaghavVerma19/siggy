@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "title": "Checkout API latency spike",
+    "summary": "Checkout API became slow because Redis had no free connections in the pool. Users experienced 5-10 second response times during peak traffic.",
+    "root_cause": "Redis connection pool exhausted. Pool size was 64 but concurrent connections peaked at 200+.",
+    "fix": "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+    "affected_services": ["checkout", "cart", "session"],
+    "severity": "critical"
+  },
+  {
+    "id": "2",
+    "title": "Kafka brokers unavailable",
+    "summary": "Kafka brokers went down causing message queue backup. All event-driven services stopped processing. Producer queues filled up and started dropping messages.",
+    "root_cause": "Kafka brokers crashed due to disk space exhaustion. Log retention policy was set too high.",
+    "fix": "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts.",
+    "affected_services": ["order-processor", "notification-service", "analytics"],
+    "severity": "critical"
+  },
+  {
+    "id": "3",
+    "title": "CPU spike in payment service",
+    "summary": "Payment service CPU usage hit 100% causing request timeouts. The service was stuck in an infinite retry loop calling a downstream API.",
+    "root_cause": "Infinite retry loop in payment gateway client. Exponential backoff was not implemented. Each failed request spawned 3 retries.",
+    "fix": "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+    "affected_services": ["payment", "billing"],
+    "severity": "high"
+  },
+  {
+    "id": "4",
+    "title": "Database connection timeout",
+    "summary": "Primary PostgreSQL database became unreachable. All services experienced connection timeouts. Read replicas continued working but lagged behind.",
+    "root_cause": "Database connection pool maxed out at 100 connections. Long-running analytical queries were holding connections for minutes.",
+    "fix": "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+    "affected_services": ["api-gateway", "user-service", "order-service"],
+    "severity": "critical"
+  },
+  {
+    "id": "5",
+    "title": "Worker pods OOM killed",
+    "summary": "Background worker pods were repeatedly OOM killed by Kubernetes. Job processing stopped and queue depth grew to millions.",
+    "root_cause": "Memory leak in image processing worker. Large images were not being garbage collected. Heap grew to 4GB before OOM.",
+    "fix": "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+    "affected_services": ["image-processor", "media-service"],
+    "severity": "high"
+  }
+]
