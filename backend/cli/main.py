@@ -8,6 +8,8 @@ import signal
 import subprocess
 import sys
 import time
+
+from utils.paths import siggy_env_path
 import uuid
 from pathlib import Path
 
@@ -93,7 +95,7 @@ def setup():
     # Check GROQ
     groq_key = os.getenv("GROQ_API_KEY", "")
     if not groq_key:
-        env_path = Path(__file__).parent.parent / ".env"
+        env_path = siggy_env_path()
         if env_path.exists():
             for line in env_path.read_text().splitlines():
                 if line.startswith("GROQ_API_KEY=") and not line.endswith("your-groq-api-key-here"):
@@ -163,8 +165,8 @@ def _prompt_api_key(signoz_url: str) -> str:
 
 
 def _save_env_key(key: str, value: str):
-    """Save a key-value pair to backend/.env, creating or updating as needed."""
-    env_path = Path(__file__).parent.parent / ".env"
+    """Save a key-value pair to ~/.siggy/.env, creating or updating as needed."""
+    env_path = siggy_env_path()
     lines = []
     found = False
     if env_path.exists():
@@ -251,7 +253,7 @@ def _prompt_signoz_key(signoz_url: str = "http://localhost:8080") -> str:
 def _ensure_keys() -> SiggyConfig:
     """Check for required API keys. Prompt for any that are missing. Returns updated config."""
     from dotenv import load_dotenv as _ld
-    _ld(Path(__file__).parent.parent / ".env", override=True)
+    _ld(siggy_env_path(), override=True)
 
     groq_key = os.getenv("GROQ_API_KEY", "")
     config = SiggyConfig.load()
@@ -380,7 +382,7 @@ def quickstart(force: bool):
         click.echo(f"  [OK] Config saved: {path}")
 
     # ── Step 6: Write .env if missing ──
-    env_path = Path(__file__).parent.parent / ".env"
+    env_path = siggy_env_path()
     if not env_path.exists():
         env_lines = [
             f"GROQ_API_KEY={groq_key}",
@@ -584,7 +586,7 @@ def _quickstart_check_groq() -> str:
         return key
 
     # Check .env file
-    env_path = Path(__file__).parent.parent / ".env"
+    env_path = siggy_env_path()
     if env_path.exists():
         for line in env_path.read_text().splitlines():
             if line.startswith("GROQ_API_KEY=") and not line.endswith("your-groq-api-key-here"):
@@ -850,7 +852,7 @@ def serve(host: str, port: int):
     import uvicorn
 
     uvicorn.run(
-        "main:app",
+        "siggy_server.main:app",
         host=host,
         port=port,
         reload=False,
@@ -909,7 +911,7 @@ def up(app_command: str | None, service: str | None, host: str, port: int):
 
     def _run_server():
         uvicorn.run(
-            "main:app",
+            "siggy_server.main:app",
             host=host,
             port=port,
             reload=False,
@@ -1151,7 +1153,7 @@ def demo(host: str, port: int):
 
     def _run_server():
         uvicorn.run(
-            "main:app",
+            "siggy_server.main:app",
             host=host,
             port=port,
             reload=False,

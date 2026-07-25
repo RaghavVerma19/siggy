@@ -22,9 +22,11 @@ from pathlib import Path
 
 from cli.config import SiggyConfig
 
+from utils.paths import siggy_incidents_db
+
 logger = logging.getLogger(__name__)
 
-DB_PATH = Path(__file__).parent.parent / "data" / "siggy_incidents.db"
+DB_PATH = siggy_incidents_db()
 
 
 class SiggySidecar:

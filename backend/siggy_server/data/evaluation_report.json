@@ -1,0 +1,2416 @@
+{
+  "evaluation_date": "July 23, 2026",
+  "dataset_size": 30,
+  "reference_memory_size": 20,
+  "experience_records_seeded": 125,
+  "graph_nodes": 47,
+  "graph_edges": 87,
+  "metrics": {
+    "incident_retrieval_top1_accuracy": 73.33,
+    "incident_retrieval_top3_accuracy": 83.33,
+    "recommendation_top1_accuracy": 56.67,
+    "recommendation_top3_accuracy": 90.0,
+    "baseline_recommendation_top1_accuracy": 86.67,
+    "baseline_recommendation_top3_accuracy": 100.0,
+    "experience_ranking_improvement_top1": -30.0,
+    "experience_ranking_improvement_top3": -10.0,
+    "knowledge_normalization_accuracy": 64.0,
+    "average_confidence": 0.76,
+    "average_response_time_ms": 297.99,
+    "average_retrieval_latency_ms": 287.25,
+    "average_graph_query_latency_ms": 3.03,
+    "normalization_field_accuracy": {
+      "service": 73.33,
+      "component": 100.0,
+      "failure_type": 50.0,
+      "fix_type": 90.0,
+      "severity": 6.67
+    }
+  },
+  "confusion_summary": {
+    "field_accuracy": {
+      "service": {
+        "correct": 22,
+        "incorrect": 8,
+        "accuracy_pct": 73.33
+      },
+      "component": {
+        "correct": 30,
+        "incorrect": 0,
+        "accuracy_pct": 100.0
+      },
+      "failure_type": {
+        "correct": 15,
+        "incorrect": 15,
+        "accuracy_pct": 50.0
+      },
+      "fix_type": {
+        "correct": 27,
+        "incorrect": 3,
+        "accuracy_pct": 90.0
+      },
+      "severity": {
+        "correct": 2,
+        "incorrect": 28,
+        "accuracy_pct": 6.67
+      }
+    },
+    "field_confusion_top5": {
+      "service": [
+        {
+          "pair": "gateway -> checkout",
+          "count": 3,
+          "pct": 10.0
+        },
+        {
+          "pair": "order-service -> order-processor",
+          "count": 2,
+          "pct": 6.67
+        },
+        {
+          "pair": "api -> checkout",
+          "count": 1,
+          "pct": 3.33
+        },
+        {
+          "pair": "payment-worker -> payment",
+          "count": 1,
+          "pct": 3.33
+        },
+        {
+          "pair": "orders -> order-processor",
+          "count": 1,
+          "pct": 3.33
+        }
+      ],
+      "component": [],
+      "failure_type": [
+        {
+          "pair": "disk_full -> kafka_disk_pressure",
+          "count": 5,
+          "pct": 16.67
+        },
+        {
+          "pair": "timeout -> redis_failover_storm",
+          "count": 4,
+          "pct": 13.33
+        },
+        {
+          "pair": "connection_pool_exhaustion -> timeout",
+          "count": 2,
+          "pct": 6.67
+        },
+        {
+          "pair": "timeout -> infinite_loop",
+          "count": 1,
+          "pct": 3.33
+        },
+        {
+          "pair": "infinite_loop -> cpu_saturation",
+          "count": 1,
+          "pct": 3.33
+        }
+      ],
+      "fix_type": [
+        {
+          "pair": "increase_pool_size -> add_exponential_backoff",
+          "count": 2,
+          "pct": 6.67
+        },
+        {
+          "pair": "renew_certificate -> add_exponential_backoff",
+          "count": 1,
+          "pct": 3.33
+        }
+      ],
+      "severity": [
+        {
+          "pair": "high -> medium",
+          "count": 11,
+          "pct": 36.67
+        },
+        {
+          "pair": "critical -> medium",
+          "count": 9,
+          "pct": 30.0
+        },
+        {
+          "pair": "high -> low",
+          "count": 5,
+          "pct": 16.67
+        },
+        {
+          "pair": "high -> critical",
+          "count": 3,
+          "pct": 10.0
+        }
+      ]
+    },
+    "normalization_method_distribution": {
+      "regex-first": 27,
+      "alias-lookup": 1,
+      "heuristic": 2
+    }
+  },
+  "case_results": [
+    {
+      "id": "bench-001",
+      "title": "Checkout requests stall during flash sale",
+      "knowledge_object": {
+        "incident_id": "bench-001",
+        "title": "Checkout requests stall during flash sale",
+        "summary": "Checkout users waited 6 seconds because Redis had no free connections left in the pool during peak traffic.",
+        "service": "checkout",
+        "component": "redis",
+        "failure_type": "connection_pool_exhaustion",
+        "symptoms": [
+          "connection_pool_exhausted"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced connection pool exhaustion.",
+        "fix": "Increase Redis connection pool size and recycle stuck connections.",
+        "fix_type": "increase_pool_size",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:18.939431"
+      },
+      "similar_titles": [
+        "Checkout API latency spike",
+        "Redis timeout in session service",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Increase Redis connection pool size and recycle stuck connections.",
+      "recommendation_confidence": 1.03,
+      "ranked_recommendations": [
+        "Increase Redis connection pool size and recycle stuck connections.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "baseline_recommendations": [
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "checkout depends on redis",
+        "10 historical occurrences for connection_pool_exhaustion",
+        "Best recommendation Increase Pool Size succeeds 100% of the time",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 1.03,
+        "normalization_latency_ms": 0.61,
+        "retrieval_latency_ms": 344.23,
+        "ranking_latency_ms": 11.1,
+        "graph_query_latency_ms": 3.84,
+        "response_latency_ms": 359.9
+      }
+    },
+    {
+      "id": "bench-002",
+      "title": "Checkout API timing out on cart lookups",
+      "knowledge_object": {
+        "incident_id": "bench-002",
+        "title": "Checkout API timing out on cart lookups",
+        "summary": "The checkout API spent several seconds waiting for Redis because every client slot in the connection pool was already busy.",
+        "service": "checkout",
+        "component": "redis",
+        "failure_type": "timeout",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced timeout.",
+        "fix": "Add exponential backoff and verify dependency health.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.65,
+        "timestamp": "2026-07-24T15:23:19.300823"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Add exponential backoff and verify dependency health.",
+      "recommendation_confidence": 0.832,
+      "ranked_recommendations": [
+        "Add exponential backoff and verify dependency health.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "checkout depends on redis",
+        "70 historical occurrences for timeout",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.4,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": false,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "connection_pool_exhaustion",
+            "predicted": "timeout"
+          },
+          "fix_type": {
+            "expected": "increase_pool_size",
+            "predicted": "add_exponential_backoff"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "alias-lookup",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": false,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.832,
+        "normalization_latency_ms": 0.47,
+        "retrieval_latency_ms": 287.71,
+        "ranking_latency_ms": 8.74,
+        "graph_query_latency_ms": 6.81,
+        "response_latency_ms": 303.85
+      }
+    },
+    {
+      "id": "bench-003",
+      "title": "Checkout slows down when promotions go live",
+      "knowledge_object": {
+        "incident_id": "bench-003",
+        "title": "Checkout slows down when promotions go live",
+        "summary": "Redis reported no free connections and checkout latency rose above 5 seconds for most purchase attempts.",
+        "service": "checkout",
+        "component": "redis",
+        "failure_type": "connection_pool_exhaustion",
+        "symptoms": [
+          "connection_pool_exhausted"
+        ],
+        "severity": "low",
+        "environment": "production",
+        "root_cause": "redis experienced connection pool exhaustion.",
+        "fix": "Increase Redis connection pool size and recycle stuck connections.",
+        "fix_type": "increase_pool_size",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:19.604796"
+      },
+      "similar_titles": [
+        "Checkout API latency spike",
+        "Redis timeout in session service",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Increase Redis connection pool size and recycle stuck connections.",
+      "recommendation_confidence": 1.03,
+      "ranked_recommendations": [
+        "Increase Redis connection pool size and recycle stuck connections.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "baseline_recommendations": [
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "checkout depends on redis",
+        "10 historical occurrences for connection_pool_exhaustion",
+        "Best recommendation Increase Pool Size succeeds 100% of the time",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "low"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 1.03,
+        "normalization_latency_ms": 0.52,
+        "retrieval_latency_ms": 290.11,
+        "ranking_latency_ms": 5.01,
+        "graph_query_latency_ms": 2.28,
+        "response_latency_ms": 297.99
+      }
+    },
+    {
+      "id": "bench-004",
+      "title": "Payment service waits on cache connection slots",
+      "knowledge_object": {
+        "incident_id": "bench-004",
+        "title": "Payment service waits on cache connection slots",
+        "summary": "Payment service threads were blocked because the shared Redis pool was exhausted and new requests could not borrow a connection.",
+        "service": "payment",
+        "component": "redis",
+        "failure_type": "connection_pool_exhaustion",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced connection pool exhaustion.",
+        "fix": "Increase Redis connection pool size and recycle stuck connections.",
+        "fix_type": "increase_pool_size",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:19.902592"
+      },
+      "similar_titles": [
+        "Checkout API latency spike",
+        "Redis timeout in session service",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Increase Redis connection pool size and recycle stuck connections.",
+      "recommendation_confidence": 0.836,
+      "ranked_recommendations": [
+        "Increase Redis connection pool size and recycle stuck connections.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "baseline_recommendations": [
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "payment depends on redis",
+        "10 historical occurrences for connection_pool_exhaustion",
+        "Best recommendation Increase Pool Size succeeds 100% of the time"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.836,
+        "normalization_latency_ms": 0.3,
+        "retrieval_latency_ms": 272.47,
+        "ranking_latency_ms": 6.3,
+        "graph_query_latency_ms": 3.37,
+        "response_latency_ms": 282.54
+      }
+    },
+    {
+      "id": "bench-005",
+      "title": "Session service saturates Redis pool after traffic burst",
+      "knowledge_object": {
+        "incident_id": "bench-005",
+        "title": "Session service saturates Redis pool after traffic burst",
+        "summary": "Session lookups started hanging because Redis connection capacity was exhausted once mobile traffic spiked.",
+        "service": "session",
+        "component": "redis",
+        "failure_type": "timeout",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced timeout.",
+        "fix": "Add exponential backoff and verify dependency health.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.55,
+        "timestamp": "2026-07-24T15:23:20.185280"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Add exponential backoff and verify dependency health.",
+      "recommendation_confidence": 1.04,
+      "ranked_recommendations": [
+        "Add exponential backoff and verify dependency health.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "session depends on redis",
+        "5 historical occurrences for timeout",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time",
+        "Related services in the same neighborhood: checkout, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.4,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": false,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "connection_pool_exhaustion",
+            "predicted": "timeout"
+          },
+          "fix_type": {
+            "expected": "increase_pool_size",
+            "predicted": "add_exponential_backoff"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "heuristic",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": false,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 1.04,
+        "normalization_latency_ms": 0.42,
+        "retrieval_latency_ms": 281.13,
+        "ranking_latency_ms": 6.61,
+        "graph_query_latency_ms": 6.56,
+        "response_latency_ms": 294.81
+      }
+    },
+    {
+      "id": "bench-006",
+      "title": "Session service unstable during Redis failover",
+      "knowledge_object": {
+        "incident_id": "bench-006",
+        "title": "Session service unstable during Redis failover",
+        "summary": "Session service calls kept timing out because Redis clients retried all at once after a failover event.",
+        "service": "session",
+        "component": "redis",
+        "failure_type": "redis_failover_storm",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced redis failover storm.",
+        "fix": "Add exponential backoff to Redis retry logic during failover.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:20.480001"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Add exponential backoff to Redis retry logic during failover.",
+      "recommendation_confidence": 0.894,
+      "ranked_recommendations": [
+        "Add exponential backoff to Redis retry logic during failover.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "session depends on redis",
+        "Related services in the same neighborhood: checkout, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "timeout",
+            "predicted": "redis_failover_storm"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.894,
+        "normalization_latency_ms": 0.29,
+        "retrieval_latency_ms": 280.88,
+        "ranking_latency_ms": 7.35,
+        "graph_query_latency_ms": 3.87,
+        "response_latency_ms": 292.5
+      }
+    },
+    {
+      "id": "bench-007",
+      "title": "Auth service loses sessions after cache node flap",
+      "knowledge_object": {
+        "incident_id": "bench-007",
+        "title": "Auth service loses sessions after cache node flap",
+        "summary": "Auth service requests timed out on Redis while every caller retried immediately and amplified the failover storm.",
+        "service": "auth",
+        "component": "redis",
+        "failure_type": "redis_failover_storm",
+        "symptoms": [
+          "request_timeout"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced redis failover storm.",
+        "fix": "Add exponential backoff to Redis retry logic during failover.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:20.772750"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis pub/sub message loss"
+      ],
+      "recommendation": "Add exponential backoff to Redis retry logic during failover.",
+      "recommendation_confidence": 0.748,
+      "ranked_recommendations": [
+        "Add exponential backoff to Redis retry logic during failover.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "graph_evidence": [],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "timeout",
+            "predicted": "redis_failover_storm"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.748,
+        "normalization_latency_ms": 0.49,
+        "retrieval_latency_ms": 274.59,
+        "ranking_latency_ms": 4.22,
+        "graph_query_latency_ms": 0.83,
+        "response_latency_ms": 280.22
+      }
+    },
+    {
+      "id": "bench-008",
+      "title": "User API times out after Redis node election",
+      "knowledge_object": {
+        "incident_id": "bench-008",
+        "title": "User API times out after Redis node election",
+        "summary": "After a Redis node election the user API retried without backoff and request timeouts spread across the cluster.",
+        "service": "checkout",
+        "component": "redis",
+        "failure_type": "redis_failover_storm",
+        "symptoms": [
+          "request_timeout"
+        ],
+        "severity": "high",
+        "environment": "production",
+        "root_cause": "redis experienced redis failover storm.",
+        "fix": "Add exponential backoff to Redis retry logic during failover.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:21.052832"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis pub/sub message loss"
+      ],
+      "recommendation": "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+      "recommendation_confidence": 0.778,
+      "ranked_recommendations": [
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Add exponential backoff to Redis retry logic during failover."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "graph_evidence": [
+        "checkout depends on redis",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": true
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "api",
+            "predicted": "checkout"
+          },
+          "failure_type": {
+            "expected": "timeout",
+            "predicted": "redis_failover_storm"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.778,
+        "normalization_latency_ms": 0.32,
+        "retrieval_latency_ms": 289.77,
+        "ranking_latency_ms": 5.05,
+        "graph_query_latency_ms": 2.24,
+        "response_latency_ms": 297.48
+      }
+    },
+    {
+      "id": "bench-009",
+      "title": "Session service keeps hammering Redis during outage",
+      "knowledge_object": {
+        "incident_id": "bench-009",
+        "title": "Session service keeps hammering Redis during outage",
+        "summary": "Redis was recovering but the session service retried immediately on every timeout, making the outage last longer.",
+        "service": "session",
+        "component": "redis",
+        "failure_type": "infinite_loop",
+        "symptoms": [
+          "request_timeout"
+        ],
+        "severity": "critical",
+        "environment": "production",
+        "root_cause": "redis experienced infinite loop.",
+        "fix": "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:21.350412"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis cluster split-brain"
+      ],
+      "recommendation": "Add exponential backoff to retry logic to prevent CPU saturation.",
+      "recommendation_confidence": 0.915,
+      "ranked_recommendations": [
+        "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health."
+      ],
+      "graph_evidence": [
+        "session depends on redis",
+        "10 historical occurrences for infinite_loop",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time",
+        "Related services in the same neighborhood: checkout, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "timeout",
+            "predicted": "infinite_loop"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "critical"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": false,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.915,
+        "normalization_latency_ms": 0.37,
+        "retrieval_latency_ms": 279.7,
+        "ranking_latency_ms": 6.34,
+        "graph_query_latency_ms": 2.66,
+        "response_latency_ms": 289.15
+      }
+    },
+    {
+      "id": "bench-010",
+      "title": "Checkout API retries overwhelm Redis recovery",
+      "knowledge_object": {
+        "incident_id": "bench-010",
+        "title": "Checkout API retries overwhelm Redis recovery",
+        "summary": "Checkout API calls timed out and every worker retried Redis instantly instead of waiting between attempts.",
+        "service": "checkout",
+        "component": "redis",
+        "failure_type": "redis_failover_storm",
+        "symptoms": [
+          "request_timeout"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "redis experienced redis failover storm.",
+        "fix": "Add exponential backoff to Redis retry logic during failover.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:21.639490"
+      },
+      "similar_titles": [
+        "Redis timeout in session service",
+        "Checkout API latency spike",
+        "Redis pub/sub message loss"
+      ],
+      "recommendation": "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+      "recommendation_confidence": 0.778,
+      "ranked_recommendations": [
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Add exponential backoff to Redis retry logic during failover."
+      ],
+      "baseline_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Increase Redis connection pool size from 64 to 128. Set idle connection timeout to 30 seconds.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "graph_evidence": [
+        "checkout depends on redis",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "timeout",
+            "predicted": "redis_failover_storm"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": false,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.778,
+        "normalization_latency_ms": 0.27,
+        "retrieval_latency_ms": 277.41,
+        "ranking_latency_ms": 4.25,
+        "graph_query_latency_ms": 1.5,
+        "response_latency_ms": 283.51
+      }
+    },
+    {
+      "id": "bench-011",
+      "title": "Order processor stops accepting events",
+      "knowledge_object": {
+        "incident_id": "bench-011",
+        "title": "Order processor stops accepting events",
+        "summary": "Kafka disks filled up and producers were rejected because topic retention kept too much historical data on each broker.",
+        "service": "order-processor",
+        "component": "kafka",
+        "failure_type": "kafka_disk_pressure",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "kafka experienced kafka disk pressure.",
+        "fix": "Reduce Kafka log retention period and free broker disk space.",
+        "fix_type": "reduce_log_retention",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:21.923076"
+      },
+      "similar_titles": [
+        "Disk space exhaustion on Kafka",
+        "Kafka brokers unavailable",
+        "Kafka producer backpressure"
+      ],
+      "recommendation": "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+      "recommendation_confidence": 0.846,
+      "ranked_recommendations": [
+        "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+        "Reduce Kafka log retention period and free broker disk space."
+      ],
+      "baseline_recommendations": [
+        "Reduce log retention to 7 days. Add disk usage alerts at 80% threshold. Move to larger disks. Implement tiered storage.",
+        "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts.",
+        "Switch to async producer with callback. Increase buffer.memory to 64MB. Add producer metrics monitoring. Implement backpressure-aware flow control."
+      ],
+      "graph_evidence": [
+        "order-processor depends on kafka",
+        "5 historical occurrences for kafka_disk_pressure",
+        "Best recommendation Reduce Log Retention succeeds 100% of the time",
+        "Related services in the same neighborhood: analytics, kafka, event-processor"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "disk_full",
+            "predicted": "kafka_disk_pressure"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.846,
+        "normalization_latency_ms": 0.32,
+        "retrieval_latency_ms": 297.67,
+        "ranking_latency_ms": 6.96,
+        "graph_query_latency_ms": 3.56,
+        "response_latency_ms": 308.6
+      }
+    },
+    {
+      "id": "bench-012",
+      "title": "Notification service queue freezes on Kafka storage",
+      "knowledge_object": {
+        "incident_id": "bench-012",
+        "title": "Notification service queue freezes on Kafka storage",
+        "summary": "Kafka brokers ran out of disk and the notification service could not publish any more messages to the event bus.",
+        "service": "notification-service",
+        "component": "kafka",
+        "failure_type": "kafka_disk_pressure",
+        "symptoms": [
+          "queue_backup"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "kafka experienced kafka disk pressure.",
+        "fix": "Reduce Kafka log retention period and free broker disk space.",
+        "fix_type": "reduce_log_retention",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:22.231772"
+      },
+      "similar_titles": [
+        "Kafka brokers unavailable",
+        "Disk space exhaustion on Kafka",
+        "Kafka consumer lag spike"
+      ],
+      "recommendation": "Implement key salting. Use custom partitioner with round-robin. Redistribute partition keys. Consider increasing partition count.",
+      "recommendation_confidence": 0.703,
+      "ranked_recommendations": [
+        "Implement key salting. Use custom partitioner with round-robin. Redistribute partition keys. Consider increasing partition count.",
+        "Reduce Kafka log retention period and free broker disk space."
+      ],
+      "baseline_recommendations": [
+        "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts.",
+        "Reduce log retention to 7 days. Add disk usage alerts at 80% threshold. Move to larger disks. Implement tiered storage.",
+        "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer."
+      ],
+      "graph_evidence": [
+        "notification-service depends on kafka",
+        "5 historical occurrences for kafka_disk_pressure",
+        "Best recommendation Reduce Log Retention succeeds 100% of the time",
+        "Related services in the same neighborhood: checkout, session, cache"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "disk_full",
+            "predicted": "kafka_disk_pressure"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.703,
+        "normalization_latency_ms": 0.38,
+        "retrieval_latency_ms": 306.48,
+        "ranking_latency_ms": 7.41,
+        "graph_query_latency_ms": 5.05,
+        "response_latency_ms": 319.41
+      }
+    },
+    {
+      "id": "bench-013",
+      "title": "Analytics processor blocked by full Kafka brokers",
+      "knowledge_object": {
+        "incident_id": "bench-013",
+        "title": "Analytics processor blocked by full Kafka brokers",
+        "summary": "Analytics processor traffic backed up because Kafka storage crossed 95% and brokers entered a read-only state.",
+        "service": "analytics-processor",
+        "component": "kafka",
+        "failure_type": "kafka_disk_pressure",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "kafka experienced kafka disk pressure.",
+        "fix": "Reduce Kafka log retention period and free broker disk space.",
+        "fix_type": "reduce_log_retention",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:22.551179"
+      },
+      "similar_titles": [
+        "Disk space exhaustion on Kafka",
+        "Kafka producer backpressure",
+        "Kafka brokers unavailable"
+      ],
+      "recommendation": "Reduce Kafka log retention period and free broker disk space.",
+      "recommendation_confidence": 0.77,
+      "ranked_recommendations": [
+        "Reduce Kafka log retention period and free broker disk space.",
+        "Implement key salting. Use custom partitioner with round-robin. Redistribute partition keys. Consider increasing partition count."
+      ],
+      "baseline_recommendations": [
+        "Reduce log retention to 7 days. Add disk usage alerts at 80% threshold. Move to larger disks. Implement tiered storage.",
+        "Switch to async producer with callback. Increase buffer.memory to 64MB. Add producer metrics monitoring. Implement backpressure-aware flow control.",
+        "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts."
+      ],
+      "graph_evidence": [
+        "5 historical occurrences for kafka_disk_pressure",
+        "Best recommendation Reduce Log Retention succeeds 100% of the time"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "disk_full",
+            "predicted": "kafka_disk_pressure"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.77,
+        "normalization_latency_ms": 0.33,
+        "retrieval_latency_ms": 273.65,
+        "ranking_latency_ms": 5.96,
+        "graph_query_latency_ms": 2.78,
+        "response_latency_ms": 282.81
+      }
+    },
+    {
+      "id": "bench-014",
+      "title": "Event processor cannot push messages to Kafka",
+      "knowledge_object": {
+        "incident_id": "bench-014",
+        "title": "Event processor cannot push messages to Kafka",
+        "summary": "The event processor saw Kafka reject writes because topic logs had consumed almost all broker disk space.",
+        "service": "event-processor",
+        "component": "kafka",
+        "failure_type": "kafka_disk_pressure",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "kafka experienced kafka disk pressure.",
+        "fix": "Reduce Kafka log retention period and free broker disk space.",
+        "fix_type": "reduce_log_retention",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:22.834117"
+      },
+      "similar_titles": [
+        "Kafka producer backpressure",
+        "Disk space exhaustion on Kafka",
+        "Kafka topic partition unbalanced"
+      ],
+      "recommendation": "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+      "recommendation_confidence": 0.862,
+      "ranked_recommendations": [
+        "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+        "Reduce Kafka log retention period and free broker disk space."
+      ],
+      "baseline_recommendations": [
+        "Switch to async producer with callback. Increase buffer.memory to 64MB. Add producer metrics monitoring. Implement backpressure-aware flow control.",
+        "Reduce log retention to 7 days. Add disk usage alerts at 80% threshold. Move to larger disks. Implement tiered storage.",
+        "Implement key salting. Use custom partitioner with round-robin. Redistribute partition keys. Consider increasing partition count."
+      ],
+      "graph_evidence": [
+        "event-processor depends on kafka",
+        "5 historical occurrences for kafka_disk_pressure",
+        "Best recommendation Reduce Log Retention succeeds 100% of the time",
+        "Related services in the same neighborhood: order-processor, analytics, kafka"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "disk_full",
+            "predicted": "kafka_disk_pressure"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": false,
+        "baseline_top1_hit": false,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.862,
+        "normalization_latency_ms": 0.44,
+        "retrieval_latency_ms": 270.35,
+        "ranking_latency_ms": 13.95,
+        "graph_query_latency_ms": 6.8,
+        "response_latency_ms": 291.73
+      }
+    },
+    {
+      "id": "bench-015",
+      "title": "Order processor stalls from Kafka disk pressure",
+      "knowledge_object": {
+        "incident_id": "bench-015",
+        "title": "Order processor stalls from Kafka disk pressure",
+        "summary": "Producers to Kafka started failing once broker disks filled up because retention on hot topics was far too long.",
+        "service": "order-processor",
+        "component": "kafka",
+        "failure_type": "kafka_disk_pressure",
+        "symptoms": [
+          "disk_pressure"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "kafka experienced kafka disk pressure.",
+        "fix": "Reduce Kafka log retention period and free broker disk space.",
+        "fix_type": "reduce_log_retention",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:23.126132"
+      },
+      "similar_titles": [
+        "Kafka brokers unavailable",
+        "Disk space exhaustion on Kafka",
+        "Kafka producer backpressure"
+      ],
+      "recommendation": "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+      "recommendation_confidence": 0.832,
+      "ranked_recommendations": [
+        "Fix consumer heartbeat configuration. Set session.timeout.ms to 30000. Implement cooperative sticky assignor. Fix the buggy consumer.",
+        "Reduce Kafka log retention period and free broker disk space."
+      ],
+      "baseline_recommendations": [
+        "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts.",
+        "Reduce log retention to 7 days. Add disk usage alerts at 80% threshold. Move to larger disks. Implement tiered storage.",
+        "Switch to async producer with callback. Increase buffer.memory to 64MB. Add producer metrics monitoring. Implement backpressure-aware flow control."
+      ],
+      "graph_evidence": [
+        "order-processor depends on kafka",
+        "5 historical occurrences for kafka_disk_pressure",
+        "Best recommendation Reduce Log Retention succeeds 100% of the time",
+        "Related services in the same neighborhood: analytics, kafka, event-processor"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "disk_full",
+            "predicted": "kafka_disk_pressure"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.832,
+        "normalization_latency_ms": 0.61,
+        "retrieval_latency_ms": 297.81,
+        "ranking_latency_ms": 11.14,
+        "graph_query_latency_ms": 3.67,
+        "response_latency_ms": 313.32
+      }
+    },
+    {
+      "id": "bench-016",
+      "title": "Payment service CPU pinned by retry loop",
+      "knowledge_object": {
+        "incident_id": "bench-016",
+        "title": "Payment service CPU pinned by retry loop",
+        "summary": "Payment service hit 100% CPU because a failed downstream call triggered an infinite retry loop without exponential backoff.",
+        "service": "payment",
+        "component": "cpu",
+        "failure_type": "infinite_loop",
+        "symptoms": [
+          "cpu_spike"
+        ],
+        "severity": "critical",
+        "environment": "production",
+        "root_cause": "cpu experienced infinite loop.",
+        "fix": "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:23.439174"
+      },
+      "similar_titles": [
+        "CPU spike in payment service",
+        "Memory leak in payment worker",
+        "PostgreSQL lock contention"
+      ],
+      "recommendation": "Add exponential backoff to retry logic to prevent CPU saturation.",
+      "recommendation_confidence": 0.914,
+      "ranked_recommendations": [
+        "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "baseline_recommendations": [
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "graph_evidence": [
+        "payment depends on cpu",
+        "10 historical occurrences for infinite_loop",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "critical"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.914,
+        "normalization_latency_ms": 0.29,
+        "retrieval_latency_ms": 298.34,
+        "ranking_latency_ms": 11.37,
+        "graph_query_latency_ms": 1.82,
+        "response_latency_ms": 311.88
+      }
+    },
+    {
+      "id": "bench-017",
+      "title": "Billing API burns CPU after partner errors",
+      "knowledge_object": {
+        "incident_id": "bench-017",
+        "title": "Billing API burns CPU after partner errors",
+        "summary": "Billing API threads spun in an infinite loop and CPU saturated because retries fired immediately on every gateway failure.",
+        "service": "api",
+        "component": "cpu",
+        "failure_type": "cpu_saturation",
+        "symptoms": [
+          "cpu_spike"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "cpu experienced cpu saturation.",
+        "fix": "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:23.751176"
+      },
+      "similar_titles": [
+        "CPU spike in payment service",
+        "Worker pods OOM killed",
+        "Database replication lag"
+      ],
+      "recommendation": "Add exponential backoff to retry logic to prevent CPU saturation.",
+      "recommendation_confidence": 0.514,
+      "ranked_recommendations": [
+        "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts."
+      ],
+      "baseline_recommendations": [
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts."
+      ],
+      "graph_evidence": [],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "infinite_loop",
+            "predicted": "cpu_saturation"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.514,
+        "normalization_latency_ms": 0.39,
+        "retrieval_latency_ms": 298.44,
+        "ranking_latency_ms": 4.15,
+        "graph_query_latency_ms": 0.44,
+        "response_latency_ms": 303.5
+      }
+    },
+    {
+      "id": "bench-018",
+      "title": "Payment worker locked at 100 percent CPU",
+      "knowledge_object": {
+        "incident_id": "bench-018",
+        "title": "Payment worker locked at 100 percent CPU",
+        "summary": "Payment worker processing saturated CPU because the same downstream call retried forever instead of backing off between attempts.",
+        "service": "payment",
+        "component": "cpu",
+        "failure_type": "infinite_loop",
+        "symptoms": [
+          "cpu_spike",
+          "service_unavailable"
+        ],
+        "severity": "critical",
+        "environment": "production",
+        "root_cause": "cpu experienced infinite loop.",
+        "fix": "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:24.054728"
+      },
+      "similar_titles": [
+        "CPU spike in payment service",
+        "Memory leak in payment worker",
+        "Circuit breaker cascade"
+      ],
+      "recommendation": "Add exponential backoff to retry logic to prevent CPU saturation.",
+      "recommendation_confidence": 0.943,
+      "ranked_recommendations": [
+        "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Implement different timeout levels per service. Add bulkhead pattern. Implement fallback responses. Add circuit breaker dashboards."
+      ],
+      "baseline_recommendations": [
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Implement different timeout levels per service. Add bulkhead pattern. Implement fallback responses. Add circuit breaker dashboards."
+      ],
+      "graph_evidence": [
+        "payment depends on cpu",
+        "10 historical occurrences for infinite_loop",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.4,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": false,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "payment-worker",
+            "predicted": "payment"
+          },
+          "failure_type": {
+            "expected": "cpu_saturation",
+            "predicted": "infinite_loop"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "critical"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": false,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.943,
+        "normalization_latency_ms": 0.42,
+        "retrieval_latency_ms": 271.55,
+        "ranking_latency_ms": 9.24,
+        "graph_query_latency_ms": 2.25,
+        "response_latency_ms": 283.57
+      }
+    },
+    {
+      "id": "bench-019",
+      "title": "Checkout service loops on failed dependency",
+      "knowledge_object": {
+        "incident_id": "bench-019",
+        "title": "Checkout service loops on failed dependency",
+        "summary": "Checkout service CPU spiked because each failed payment request entered an infinite retry loop with no backoff strategy.",
+        "service": "checkout",
+        "component": "cpu",
+        "failure_type": "infinite_loop",
+        "symptoms": [
+          "cpu_spike"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "cpu experienced infinite loop.",
+        "fix": "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:24.338252"
+      },
+      "similar_titles": [
+        "CPU spike in payment service",
+        "Worker pods OOM killed",
+        "Memory leak in payment worker"
+      ],
+      "recommendation": "Add exponential backoff to retry logic to prevent CPU saturation.",
+      "recommendation_confidence": 0.707,
+      "ranked_recommendations": [
+        "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts."
+      ],
+      "baseline_recommendations": [
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring."
+      ],
+      "graph_evidence": [
+        "checkout depends on cpu",
+        "10 historical occurrences for infinite_loop",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.707,
+        "normalization_latency_ms": 0.33,
+        "retrieval_latency_ms": 274.74,
+        "ranking_latency_ms": 8.2,
+        "graph_query_latency_ms": 2.47,
+        "response_latency_ms": 285.83
+      }
+    },
+    {
+      "id": "bench-020",
+      "title": "Payment service degrades under CPU saturation",
+      "knowledge_object": {
+        "incident_id": "bench-020",
+        "title": "Payment service degrades under CPU saturation",
+        "summary": "A broken client retried the same request continuously and pushed payment service CPU to 100 percent within minutes.",
+        "service": "payment",
+        "component": "cpu",
+        "failure_type": "cpu_saturation",
+        "symptoms": [
+          "cpu_spike"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "cpu experienced cpu saturation.",
+        "fix": "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:24.624308"
+      },
+      "similar_titles": [
+        "CPU spike in payment service",
+        "Memory leak in payment worker",
+        "Worker pods OOM killed"
+      ],
+      "recommendation": "Add exponential backoff to retry logic to prevent CPU saturation.",
+      "recommendation_confidence": 0.688,
+      "ranked_recommendations": [
+        "Add exponential backoff to retry logic to prevent CPU saturation.",
+        "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts."
+      ],
+      "baseline_recommendations": [
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Fix memory leak by explicitly releasing image buffers after processing. Set memory limit to 2GB. Add horizontal pod autoscaler."
+      ],
+      "graph_evidence": [
+        "payment depends on cpu"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": false,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.688,
+        "normalization_latency_ms": 0.53,
+        "retrieval_latency_ms": 291.85,
+        "ranking_latency_ms": 5.31,
+        "graph_query_latency_ms": 0.99,
+        "response_latency_ms": 298.77
+      }
+    },
+    {
+      "id": "bench-021",
+      "title": "Order service slows after new report query",
+      "knowledge_object": {
+        "incident_id": "bench-021",
+        "title": "Order service slows after new report query",
+        "summary": "PostgreSQL response times exploded because a new orders query scanned the table without the right index.",
+        "service": "order-processor",
+        "component": "postgresql",
+        "failure_type": "query_overload",
+        "symptoms": [
+          "high_latency",
+          "slow_queries"
+        ],
+        "severity": "low",
+        "environment": "production",
+        "root_cause": "postgresql experienced query overload.",
+        "fix": "Reduce query load and add or tune database indexes.",
+        "fix_type": "reduce_query_load",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:24.922888"
+      },
+      "similar_titles": [
+        "PostgreSQL slow queries",
+        "PostgreSQL lock contention",
+        "Database connection timeout"
+      ],
+      "recommendation": "Reduce query load and add or tune database indexes.",
+      "recommendation_confidence": 0.71,
+      "ranked_recommendations": [
+        "Reduce query load and add or tune database indexes.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "baseline_recommendations": [
+        "Create index on orders(status, created_at). Add query performance monitoring. Implement index review in PR process.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds."
+      ],
+      "graph_evidence": [
+        "order-processor depends on postgresql",
+        "5 historical occurrences for query_overload",
+        "Best recommendation Reduce Query Load succeeds 75% of the time",
+        "Related services in the same neighborhood: analytics, kafka, event-processor"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "orders",
+            "predicted": "order-processor"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "low"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.71,
+        "normalization_latency_ms": 0.32,
+        "retrieval_latency_ms": 281.53,
+        "ranking_latency_ms": 5.81,
+        "graph_query_latency_ms": 3.22,
+        "response_latency_ms": 290.96
+      }
+    },
+    {
+      "id": "bench-022",
+      "title": "Order service database goes from milliseconds to seconds",
+      "knowledge_object": {
+        "incident_id": "bench-022",
+        "title": "Order service database goes from milliseconds to seconds",
+        "summary": "Every PostgreSQL query turned slow because the latest release added a filter that forced a full table scan without an index.",
+        "service": "order-processor",
+        "component": "postgresql",
+        "failure_type": "query_overload",
+        "symptoms": [
+          "slow_queries"
+        ],
+        "severity": "low",
+        "environment": "production",
+        "root_cause": "postgresql experienced query overload.",
+        "fix": "Reduce query load and add or tune database indexes.",
+        "fix_type": "reduce_query_load",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:25.213873"
+      },
+      "similar_titles": [
+        "PostgreSQL slow queries",
+        "Database connection timeout",
+        "PostgreSQL lock contention"
+      ],
+      "recommendation": "Reduce query load and add or tune database indexes.",
+      "recommendation_confidence": 0.727,
+      "ranked_recommendations": [
+        "Reduce query load and add or tune database indexes.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+        "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts."
+      ],
+      "baseline_recommendations": [
+        "Create index on orders(status, created_at). Add query performance monitoring. Implement index review in PR process.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "graph_evidence": [
+        "order-processor depends on postgresql",
+        "5 historical occurrences for query_overload",
+        "Best recommendation Reduce Query Load succeeds 75% of the time",
+        "Related services in the same neighborhood: analytics, kafka, event-processor"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "order-service",
+            "predicted": "order-processor"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "low"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.727,
+        "normalization_latency_ms": 0.33,
+        "retrieval_latency_ms": 290.81,
+        "ranking_latency_ms": 9.91,
+        "graph_query_latency_ms": 3.75,
+        "response_latency_ms": 304.91
+      }
+    },
+    {
+      "id": "bench-023",
+      "title": "API gateway sees slow reads from PostgreSQL",
+      "knowledge_object": {
+        "incident_id": "bench-023",
+        "title": "API gateway sees slow reads from PostgreSQL",
+        "summary": "The API gateway waited seconds on PostgreSQL because a missing index caused heavy query overload on a large orders table.",
+        "service": "checkout",
+        "component": "postgresql",
+        "failure_type": "query_overload",
+        "symptoms": [
+          "high_latency",
+          "slow_queries"
+        ],
+        "severity": "low",
+        "environment": "production",
+        "root_cause": "postgresql experienced query overload.",
+        "fix": "Reduce query load and add or tune database indexes.",
+        "fix_type": "reduce_query_load",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:25.518892"
+      },
+      "similar_titles": [
+        "Database connection timeout",
+        "PostgreSQL slow queries",
+        "PostgreSQL lock contention"
+      ],
+      "recommendation": "Reduce query load and add or tune database indexes.",
+      "recommendation_confidence": 0.606,
+      "ranked_recommendations": [
+        "Reduce query load and add or tune database indexes.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "baseline_recommendations": [
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+        "Create index on orders(status, created_at). Add query performance monitoring. Implement index review in PR process.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "graph_evidence": [
+        "checkout depends on postgresql",
+        "5 historical occurrences for query_overload",
+        "Best recommendation Reduce Query Load succeeds 75% of the time",
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "gateway",
+            "predicted": "checkout"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "low"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": false,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": false,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.606,
+        "normalization_latency_ms": 0.37,
+        "retrieval_latency_ms": 296.85,
+        "ranking_latency_ms": 6.34,
+        "graph_query_latency_ms": 2.27,
+        "response_latency_ms": 305.89
+      }
+    },
+    {
+      "id": "bench-024",
+      "title": "Order service query storm after feature launch",
+      "knowledge_object": {
+        "incident_id": "bench-024",
+        "title": "Order service query storm after feature launch",
+        "summary": "A recent feature pushed PostgreSQL into slow queries because the application hammered an unindexed status filter.",
+        "service": "order-processor",
+        "component": "postgresql",
+        "failure_type": "query_overload",
+        "symptoms": [
+          "slow_queries"
+        ],
+        "severity": "low",
+        "environment": "production",
+        "root_cause": "postgresql experienced query overload.",
+        "fix": "Reduce query load and add or tune database indexes.",
+        "fix_type": "reduce_query_load",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:25.824774"
+      },
+      "similar_titles": [
+        "PostgreSQL slow queries",
+        "Database connection timeout",
+        "PostgreSQL lock contention"
+      ],
+      "recommendation": "Reduce query load and add or tune database indexes.",
+      "recommendation_confidence": 0.727,
+      "ranked_recommendations": [
+        "Reduce query load and add or tune database indexes.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+        "Restart Kafka brokers. Reduce log retention from 7 days to 24 hours. Add disk space monitoring alerts."
+      ],
+      "baseline_recommendations": [
+        "Create index on orders(status, created_at). Add query performance monitoring. Implement index review in PR process.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "graph_evidence": [
+        "order-processor depends on postgresql",
+        "5 historical occurrences for query_overload",
+        "Best recommendation Reduce Query Load succeeds 75% of the time",
+        "Related services in the same neighborhood: analytics, kafka, event-processor"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "order-service",
+            "predicted": "order-processor"
+          },
+          "severity": {
+            "expected": "high",
+            "predicted": "low"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.727,
+        "normalization_latency_ms": 0.33,
+        "retrieval_latency_ms": 276.41,
+        "ranking_latency_ms": 6.88,
+        "graph_query_latency_ms": 3.93,
+        "response_latency_ms": 287.65
+      }
+    },
+    {
+      "id": "bench-025",
+      "title": "Orders API degraded by unindexed database call",
+      "knowledge_object": {
+        "incident_id": "bench-025",
+        "title": "Orders API degraded by unindexed database call",
+        "summary": "Orders API latency climbed because PostgreSQL had to scan millions of rows for a query that should have used an index.",
+        "service": "orders",
+        "component": "postgresql",
+        "failure_type": "query_overload",
+        "symptoms": [
+          "high_latency"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "postgresql experienced query overload.",
+        "fix": "Reduce query load and add or tune database indexes.",
+        "fix_type": "reduce_query_load",
+        "confidence": 0.95,
+        "timestamp": "2026-07-24T15:23:26.112672"
+      },
+      "similar_titles": [
+        "PostgreSQL slow queries",
+        "PostgreSQL lock contention",
+        "Database connection timeout"
+      ],
+      "recommendation": "Reduce query load and add or tune database indexes.",
+      "recommendation_confidence": 0.723,
+      "ranked_recommendations": [
+        "Reduce query load and add or tune database indexes.",
+        "Split batch inserts into smaller chunks. Implement read-your-writes consistency. Add replication lag monitoring with alerts.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths."
+      ],
+      "baseline_recommendations": [
+        "Create index on orders(status, created_at). Add query performance monitoring. Implement index review in PR process.",
+        "Implement optimistic locking with version columns. Reduce transaction scope. Add retry logic for deadlocks. Separate read/write paths.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds."
+      ],
+      "graph_evidence": [
+        "5 historical occurrences for query_overload",
+        "Best recommendation Reduce Query Load succeeds 75% of the time"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "high",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": true,
+        "ranked_top3_hit": true,
+        "confidence": 0.723,
+        "normalization_latency_ms": 0.5,
+        "retrieval_latency_ms": 291.09,
+        "ranking_latency_ms": 4.46,
+        "graph_query_latency_ms": 3.24,
+        "response_latency_ms": 299.41
+      }
+    },
+    {
+      "id": "bench-026",
+      "title": "API gateway returns 502 after ingress certificate expiry",
+      "knowledge_object": {
+        "incident_id": "bench-026",
+        "title": "API gateway returns 502 after ingress certificate expiry",
+        "summary": "Nginx at the API gateway could not open TLS sessions because an internal certificate expired overnight.",
+        "service": "checkout",
+        "component": "nginx",
+        "failure_type": "certificate_expired",
+        "symptoms": [
+          "5xx_errors"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "nginx experienced certificate expired.",
+        "fix": "Renew the expired TLS certificate and verify rotation schedule.",
+        "fix_type": "renew_certificate",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:26.412196"
+      },
+      "similar_titles": [
+        "API gateway 502 errors",
+        "CPU spike in payment service",
+        "Memory leak in payment worker"
+      ],
+      "recommendation": "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+      "recommendation_confidence": 0.487,
+      "ranked_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Implement different timeout levels per service. Add bulkhead pattern. Implement fallback responses. Add circuit breaker dashboards."
+      ],
+      "baseline_recommendations": [
+        "Renew SSL certificates. Implement automated certificate rotation. Add certificate expiry monitoring with 7-day advance alerts.",
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring."
+      ],
+      "graph_evidence": [
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "gateway",
+            "predicted": "checkout"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": false,
+        "confidence": 0.487,
+        "normalization_latency_ms": 0.57,
+        "retrieval_latency_ms": 295.81,
+        "ranking_latency_ms": 6.88,
+        "graph_query_latency_ms": 2.46,
+        "response_latency_ms": 305.87
+      }
+    },
+    {
+      "id": "bench-027",
+      "title": "Gateway fails handshakes to internal services",
+      "knowledge_object": {
+        "incident_id": "bench-027",
+        "title": "Gateway fails handshakes to internal services",
+        "summary": "The gateway started serving 502 errors because nginx was using an expired TLS certificate for upstream connections.",
+        "service": "gateway",
+        "component": "nginx",
+        "failure_type": "timeout",
+        "symptoms": [
+          "5xx_errors"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "nginx experienced timeout.",
+        "fix": "Add exponential backoff and verify dependency health.",
+        "fix_type": "add_exponential_backoff",
+        "confidence": 0.55,
+        "timestamp": "2026-07-24T15:23:26.718255"
+      },
+      "similar_titles": [
+        "API gateway 502 errors",
+        "CPU spike in payment service",
+        "Database connection timeout"
+      ],
+      "recommendation": "Add exponential backoff and verify dependency health.",
+      "recommendation_confidence": 0.609,
+      "ranked_recommendations": [
+        "Add exponential backoff and verify dependency health.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds.",
+        "Implement different timeout levels per service. Add bulkhead pattern. Implement fallback responses. Add circuit breaker dashboards."
+      ],
+      "baseline_recommendations": [
+        "Renew SSL certificates. Implement automated certificate rotation. Add certificate expiry monitoring with 7-day advance alerts.",
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Move analytical queries to read replicas. Increase connection pool to 200. Add query timeout of 30 seconds."
+      ],
+      "graph_evidence": [
+        "70 historical occurrences for timeout",
+        "Best recommendation Add Exponential Backoff succeeds 100% of the time"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.4,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": false,
+          "fix_type": false,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "failure_type": {
+            "expected": "certificate_expired",
+            "predicted": "timeout"
+          },
+          "fix_type": {
+            "expected": "renew_certificate",
+            "predicted": "add_exponential_backoff"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "heuristic",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": false,
+        "confidence": 0.609,
+        "normalization_latency_ms": 0.7,
+        "retrieval_latency_ms": 292.78,
+        "ranking_latency_ms": 11.34,
+        "graph_query_latency_ms": 5.97,
+        "response_latency_ms": 310.91
+      }
+    },
+    {
+      "id": "bench-028",
+      "title": "Auth service unreachable through nginx mesh",
+      "knowledge_object": {
+        "incident_id": "bench-028",
+        "title": "Auth service unreachable through nginx mesh",
+        "summary": "Nginx on the mesh edge rejected TLS traffic because the certificate used for internal auth calls had expired.",
+        "service": "auth",
+        "component": "nginx",
+        "failure_type": "certificate_expired",
+        "symptoms": [
+          "certificate_errors"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "nginx experienced certificate expired.",
+        "fix": "Renew the expired TLS certificate and verify rotation schedule.",
+        "fix_type": "renew_certificate",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:27.028959"
+      },
+      "similar_titles": [
+        "API gateway 502 errors",
+        "CPU spike in payment service",
+        "Redis pub/sub message loss"
+      ],
+      "recommendation": "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+      "recommendation_confidence": 0.424,
+      "ranked_recommendations": [
+        "Configure Redis client retry with exponential backoff. Add circuit breaker for Redis calls. Implement session caching layer in-memory.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Renew the expired TLS certificate and verify rotation schedule."
+      ],
+      "baseline_recommendations": [
+        "Renew SSL certificates. Implement automated certificate rotation. Add certificate expiry monitoring with 7-day advance alerts.",
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Migrate critical notifications to Redis Streams. Implement message acknowledgment. Add dead letter queue for failed deliveries."
+      ],
+      "graph_evidence": [],
+      "metrics": {
+        "normalization_accuracy": 0.8,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.424,
+        "normalization_latency_ms": 0.44,
+        "retrieval_latency_ms": 280.33,
+        "ranking_latency_ms": 6.72,
+        "graph_query_latency_ms": 0.64,
+        "response_latency_ms": 288.24
+      }
+    },
+    {
+      "id": "bench-029",
+      "title": "API gateway breaks after missed certificate rotation",
+      "knowledge_object": {
+        "incident_id": "bench-029",
+        "title": "API gateway breaks after missed certificate rotation",
+        "summary": "Gateway traffic failed once the nginx certificate expired and upstream TLS sessions could no longer be established.",
+        "service": "checkout",
+        "component": "nginx",
+        "failure_type": "certificate_expired",
+        "symptoms": [
+          "certificate_errors"
+        ],
+        "severity": "medium",
+        "environment": "production",
+        "root_cause": "nginx experienced certificate expired.",
+        "fix": "Renew the expired TLS certificate and verify rotation schedule.",
+        "fix_type": "renew_certificate",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:27.317333"
+      },
+      "similar_titles": [
+        "API gateway 502 errors",
+        "CPU spike in payment service",
+        "Memory leak in payment worker"
+      ],
+      "recommendation": "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health.",
+      "recommendation_confidence": 0.442,
+      "ranked_recommendations": [
+        "Increase cluster-node-timeout to 15000. Add majority-write consensus. Implement data reconciliation job. Monitor cluster health.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Renew the expired TLS certificate and verify rotation schedule."
+      ],
+      "baseline_recommendations": [
+        "Renew SSL certificates. Implement automated certificate rotation. Add certificate expiry monitoring with 7-day advance alerts.",
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring."
+      ],
+      "graph_evidence": [
+        "Related services in the same neighborhood: session, cache, notification-service"
+      ],
+      "metrics": {
+        "normalization_accuracy": 0.6,
+        "normalization_fields": {
+          "service": false,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": false
+        },
+        "normalization_confusions": {
+          "service": {
+            "expected": "gateway",
+            "predicted": "checkout"
+          },
+          "severity": {
+            "expected": "critical",
+            "predicted": "medium"
+          }
+        },
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": true,
+        "confidence": 0.442,
+        "normalization_latency_ms": 0.55,
+        "retrieval_latency_ms": 276.93,
+        "ranking_latency_ms": 4.56,
+        "graph_query_latency_ms": 1.32,
+        "response_latency_ms": 283.44
+      }
+    },
+    {
+      "id": "bench-030",
+      "title": "Gateway outage caused by stale TLS certificate",
+      "knowledge_object": {
+        "incident_id": "bench-030",
+        "title": "Gateway outage caused by stale TLS certificate",
+        "summary": "Nginx at the API gateway served 502 errors because its internal service certificate expired before the planned rotation window.",
+        "service": "gateway",
+        "component": "nginx",
+        "failure_type": "certificate_expired",
+        "symptoms": [
+          "5xx_errors"
+        ],
+        "severity": "critical",
+        "environment": "production",
+        "root_cause": "nginx experienced certificate expired.",
+        "fix": "Renew the expired TLS certificate and verify rotation schedule.",
+        "fix_type": "renew_certificate",
+        "confidence": 0.88,
+        "timestamp": "2026-07-24T15:23:27.600698"
+      },
+      "similar_titles": [
+        "API gateway 502 errors",
+        "CPU spike in payment service",
+        "Memory leak in payment worker"
+      ],
+      "recommendation": "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+      "recommendation_confidence": 0.638,
+      "ranked_recommendations": [
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring.",
+        "Implement different timeout levels per service. Add bulkhead pattern. Implement fallback responses. Add circuit breaker dashboards."
+      ],
+      "baseline_recommendations": [
+        "Renew SSL certificates. Implement automated certificate rotation. Add certificate expiry monitoring with 7-day advance alerts.",
+        "Add exponential backoff with max 3 retries. Add circuit breaker pattern. Set retry delay to 1s, 2s, 4s.",
+        "Add defer conn.Close() in all error paths. Use connection pooling with max lifetime of 5 minutes. Add memory monitoring."
+      ],
+      "graph_evidence": [],
+      "metrics": {
+        "normalization_accuracy": 1.0,
+        "normalization_fields": {
+          "service": true,
+          "component": true,
+          "failure_type": true,
+          "fix_type": true,
+          "severity": true
+        },
+        "normalization_confusions": {},
+        "normalization_method": "regex-first",
+        "retrieval_top1_hit": true,
+        "retrieval_top3_hit": true,
+        "baseline_top1_hit": true,
+        "baseline_top3_hit": true,
+        "ranked_top1_hit": false,
+        "ranked_top3_hit": false,
+        "confidence": 0.638,
+        "normalization_latency_ms": 0.44,
+        "retrieval_latency_ms": 276.04,
+        "ranking_latency_ms": 4.24,
+        "graph_query_latency_ms": 0.24,
+        "response_latency_ms": 281.05
+      }
+    }
+  ]
+}

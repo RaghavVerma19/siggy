@@ -28,7 +28,7 @@ $ siggy investigate "Redis timeout in checkout"
 ## Quick Start
 
 ```bash
-pip install siggy
+pip install siggy-memory
 
 # One-command setup (auto-detects Docker, Qdrant, SigNoz, GROQ)
 siggy quickstart
@@ -85,7 +85,7 @@ backend/
 ├── otel/              # Auto-instrumentation wrapper
 ├── telemetry/         # SigNoz MCP integration
 ├── llm/               # LLM prompt management
-├── main.py            # FastAPI server
+├── siggy_server/      # FastAPI server (main.py)
 └── evaluate.py        # Benchmark suite
 website/               # Marketing site
 demo/                  # Demo Flask app
