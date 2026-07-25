@@ -128,6 +128,17 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"SigNoz dashboard setup skipped: {e}")
 
+    # Auto-create default alert rules so the sidecar has alerts to enrich
+    try:
+        from signoz.alerts import setup_default_alerts
+        alert_result = setup_default_alerts(config.signoz.url, config.signoz.api_key)
+        created = alert_result.get("rules_created", 0)
+        skipped = alert_result.get("rules_skipped", 0)
+        if created:
+            print(f"Siggy created {created} default alert rules ({skipped} already existed)")
+    except Exception as e:
+        print(f"SigNoz alert setup skipped: {e}")
+
     try:
         telemetry = get_telemetry_provider()
         await telemetry.connect()
