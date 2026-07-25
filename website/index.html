@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Siggy — Operational Memory for Your Infrastructure</title>
-  <meta name="description" content="AI-powered incident investigation that learns from every fix. Built on SigNoz.">
+  <meta name="description" content="AI-powered incident investigation that learns from every fix. Three-layer retrieval makes recommendations sharper over time. Built on SigNoz.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -17,8 +17,10 @@
     <div class="nav-inner">
       <a href="#" class="nav-logo">siggy</a>
       <div class="nav-links">
+        <a href="#problem" class="nav-pill">Why Siggy</a>
         <a href="#features" class="nav-pill">Features</a>
         <a href="#how-it-works" class="nav-pill">How It Works</a>
+        <a href="#architecture" class="nav-pill">Architecture</a>
         <a href="#cli" class="nav-pill">CLI</a>
         <a href="#install" class="nav-pill">Install</a>
       </div>
@@ -32,9 +34,9 @@
   <!-- ─── Hero ─── -->
   <section class="hero">
     <div class="container">
-      <div class="hero-badge">v0.5.1 · MIT License</div>
-      <h1 class="hero-title">Operational memory<br>for your infrastructure</h1>
-      <p class="hero-sub">AI-powered incident investigation that learns from every fix.<br>Built on SigNoz.</p>
+      <div class="hero-badge">v0.5.8 · MIT License</div>
+      <h1 class="hero-title">The memory layer<br>your observability stack is missing</h1>
+      <p class="hero-sub">Siggy learns from every incident and fix. Three-layer retrieval makes recommendations sharper over time. Built on SigNoz.</p>
 
       <div class="install-pill" id="install-pill" onclick="copyInstall()">
         <span class="install-icon">&gt;</span>
@@ -45,24 +47,70 @@
       <div class="hero-stats">
         <span class="stat-pill">36ms avg response</span>
         <span class="stat-pill">23 failure types</span>
+        <span class="stat-pill">20+ API endpoints</span>
         <span class="stat-pill">9 CLI commands</span>
       </div>
     </div>
   </section>
 
+  <!-- ─── Why Siggy ─── -->
+  <section class="section section--gray" id="problem">
+    <div class="container">
+      <h2 class="section-title">Why Siggy?</h2>
+      <p class="section-sub">Modern observability gives you data. Siggy gives you answers.</p>
+
+      <div class="pain-grid">
+        <div class="pain-card fade-in">
+          <div class="pain-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="pain-title">Alert Fatigue</h3>
+          <p class="pain-desc">Teams drown in hundreds of alerts per day. Most are noise. The critical ones get buried because there is no historical context to prioritize them.</p>
+        </div>
+
+        <div class="pain-card fade-in">
+          <div class="pain-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
+            </svg>
+          </div>
+          <h3 class="pain-title">Tribal Knowledge</h3>
+          <p class="pain-desc">The fix for that Redis timeout lives in one engineer's head. When they are offline, the team restarts services blindly and hopes. Knowledge walks out the door every Friday.</p>
+        </div>
+
+        <div class="pain-card fade-in">
+          <div class="pain-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <h3 class="pain-title">Slow MTTR</h3>
+          <p class="pain-desc">Mean time to resolution has not improved in years because every investigation starts from scratch. No system remembers what worked before.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ─── Features ─── -->
-  <section class="section section--gray" id="features">
+  <section class="section" id="features">
     <div class="container">
       <h2 class="section-title">Everything you need to remember</h2>
-      <p class="section-sub">Siggy combines vector memory, knowledge graphs, and operational experience<br>into a single retrieval pipeline.</p>
+      <p class="section-sub">Three-layer retrieval, explainable recommendations, and a feedback loop that gets smarter with every incident.</p>
 
       <div class="features-grid">
         <div class="feature-item fade-in">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
           </div>
-          <h3 class="feature-title">Vector Memory</h3>
-          <p class="feature-desc">Retrieves similar past incidents from Qdrant vector search across your entire operational history.</p>
+          <h3 class="feature-title">Memory Layer</h3>
+          <p class="feature-desc">Vector search via Qdrant, knowledge graph via SQLite, and Bayesian experience ranking. Three retrieval layers combined into one pipeline that improves over time.</p>
         </div>
 
         <div class="feature-item fade-in">
@@ -70,7 +118,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M5 8v4l7 4M19 8v4l-7 4"/></svg>
           </div>
           <h3 class="feature-title">Knowledge Graph</h3>
-          <p class="feature-desc">Expands context through services, components, failure types, and their operational relationships.</p>
+          <p class="feature-desc">5 node types, 6 relationship types. Maps services, failure modes, and fixes into a connected graph that expands context during investigation.</p>
         </div>
 
         <div class="feature-item fade-in">
@@ -78,7 +126,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
           <h3 class="feature-title">Experience Engine</h3>
-          <p class="feature-desc">Ranks fixes using historical success rates, resolution times, and engineer feedback.</p>
+          <p class="feature-desc">Records outcomes, computes success rates, and uses Bayesian ranking so the best fixes rise to the top. Every resolved incident makes future recommendations better.</p>
         </div>
 
         <div class="feature-item fade-in">
@@ -86,7 +134,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>
           </div>
           <h3 class="feature-title">Auto-Instrumentation</h3>
-          <p class="feature-desc">Wraps any Python app with OpenTelemetry. Zero code changes. One command.</p>
+          <p class="feature-desc"><code>siggy instrument python app.py</code> wraps any Python app with OpenTelemetry. Zero code changes. One command.</p>
         </div>
 
         <div class="feature-item fade-in">
@@ -94,30 +142,54 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
           </div>
           <h3 class="feature-title">Explainable Recommendations</h3>
-          <p class="feature-desc">Returns root cause, fix, confidence, and evidence — not just a text answer.</p>
+          <p class="feature-desc">Every recommendation includes root cause, fix, confidence score, evidence chain, and reasoning. Not a black box -- a transparent assistant.</p>
         </div>
 
         <div class="feature-item fade-in">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12h8"/></svg>
           </div>
-          <h3 class="feature-title">Graceful Degradation</h3>
-          <p class="feature-desc">Works without external LLMs, without Qdrant Docker, without a SigNoz API key.</p>
+          <h3 class="feature-title">Zero-Config Setup</h3>
+          <p class="feature-desc"><code>pip install siggy-memory</code> then <code>siggy quickstart</code>. Embedded Qdrant (no Docker), local embedding fallback, no LLM required for normalization.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3 class="feature-title">SigNoz Integration</h3>
+          <p class="feature-desc">Auto-creates 10-panel dashboards, 3 default alert rules, saved views, and webhook notification channels. Alert sidecar enriches in real time.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          </div>
+          <h3 class="feature-title">Alert Intelligence</h3>
+          <p class="feature-desc">Polls SigNoz alerts every 30 seconds, enriches with memory pipeline, and writes recommendations back as OTel spans visible in your SigNoz dashboard.</p>
+        </div>
+
+        <div class="feature-item fade-in">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <h3 class="feature-title">Demo Mode</h3>
+          <p class="feature-desc"><code>siggy demo</code> seeds 4 realistic incidents with outcomes. Works without SigNoz, without Docker, without anything but Python.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ─── How It Works ─── -->
-  <section class="section" id="how-it-works">
+  <section class="section section--gray" id="how-it-works">
     <div class="container">
       <h2 class="section-title">How Siggy works</h2>
-      <p class="section-sub">Six steps from telemetry to explainable recommendation.</p>
+      <p class="section-sub">Seven steps from alert to explainable recommendation.</p>
 
       <div class="flow">
         <div class="flow-step fade-in">
-          <div class="flow-pill">Telemetry</div>
-          <p class="flow-label">Your app sends traces to SigNoz</p>
+          <div class="flow-pill">Alert Fires</div>
+          <p class="flow-label">SigNoz detects an anomaly in your traces</p>
         </div>
         <div class="flow-arrow">&rarr;</div>
         <div class="flow-step fade-in">
@@ -126,32 +198,165 @@
         </div>
         <div class="flow-arrow">&rarr;</div>
         <div class="flow-step fade-in">
-          <div class="flow-pill">Retrieve</div>
-          <p class="flow-label">Vector search finds similar past incidents</p>
+          <div class="flow-pill">Vector Search</div>
+          <p class="flow-label">Qdrant finds similar past incidents</p>
         </div>
         <div class="flow-arrow">&rarr;</div>
         <div class="flow-step fade-in">
-          <div class="flow-pill">Expand</div>
-          <p class="flow-label">Graph adds related services and patterns</p>
+          <div class="flow-pill">Graph Expand</div>
+          <p class="flow-label">Knowledge graph adds related services and patterns</p>
         </div>
         <div class="flow-arrow">&rarr;</div>
         <div class="flow-step fade-in">
-          <div class="flow-pill">Rank</div>
-          <p class="flow-label">Experience engine scores by historical outcomes</p>
+          <div class="flow-pill">Experience Rank</div>
+          <p class="flow-label">Bayesian scoring by historical outcomes</p>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step fade-in">
+          <div class="flow-pill">Explain</div>
+          <p class="flow-label">Root cause, confidence, evidence chain</p>
         </div>
         <div class="flow-arrow">&rarr;</div>
         <div class="flow-step fade-in">
           <div class="flow-pill primary">Recommend</div>
-          <p class="flow-label">Explainable fix returned to SigNoz</p>
+          <p class="flow-label">Actionable fix written back to SigNoz</p>
         </div>
       </div>
 
-      <p class="flow-note">Engineers record outcomes. Future recommendations improve.</p>
+      <p class="flow-note">Engineers record outcomes. The experience engine learns. Future recommendations improve.</p>
+    </div>
+  </section>
+
+  <!-- ─── Architecture ─── -->
+  <section class="section" id="architecture">
+    <div class="container">
+      <h2 class="section-title">Three-layer retrieval architecture</h2>
+      <p class="section-sub">Every query flows through three memory layers. Each layer contributes signals. The result is ranked by real-world outcomes.</p>
+
+      <div class="arch-diagram fade-in">
+        <div class="arch-input">
+          <div class="arch-box arch-box--input">
+            <span class="arch-box-label">Incoming Alert</span>
+            <span class="arch-box-detail">Structured KnowledgeObject</span>
+          </div>
+          <div class="arch-arrow-down">&darr;</div>
+        </div>
+
+        <div class="arch-layers">
+          <div class="arch-layer fade-in">
+            <div class="arch-layer-header">
+              <span class="arch-layer-num">1</span>
+              <span class="arch-layer-name">Vector Search</span>
+            </div>
+            <div class="arch-layer-body">
+              <span class="arch-tech">Qdrant</span>
+              <p class="arch-layer-desc">Semantic similarity across all past incidents. Finds the closest matches by embedding distance.</p>
+            </div>
+          </div>
+
+          <div class="arch-layer fade-in">
+            <div class="arch-layer-header">
+              <span class="arch-layer-num">2</span>
+              <span class="arch-layer-name">Knowledge Graph</span>
+            </div>
+            <div class="arch-layer-body">
+              <span class="arch-tech">SQLite</span>
+              <p class="arch-layer-desc">Expands context through service dependencies, failure types, and fix relationships. 5 node types, 6 relationship types.</p>
+            </div>
+          </div>
+
+          <div class="arch-layer fade-in">
+            <div class="arch-layer-header">
+              <span class="arch-layer-num">3</span>
+              <span class="arch-layer-name">Experience Engine</span>
+            </div>
+            <div class="arch-layer-body">
+              <span class="arch-tech">Bayesian</span>
+              <p class="arch-layer-desc">Ranks candidates by historical success rate, resolution time, and engineer feedback. Best fixes rise to the top.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-arrow-down">&darr;</div>
+
+        <div class="arch-output">
+          <div class="arch-box arch-box--output">
+            <span class="arch-box-label">Explainable Recommendation</span>
+            <span class="arch-box-detail">Root cause · Fix · Confidence · Evidence chain</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SigNoz Integration ─── -->
+  <section class="section section--gray" id="signoz-integration">
+    <div class="container">
+      <h2 class="section-title">Deep SigNoz integration</h2>
+      <p class="section-sub">Siggy does not just connect to SigNoz. It sets it up for you.</p>
+
+      <div class="integration-grid">
+        <div class="integration-card fade-in">
+          <div class="integration-card-header">
+            <div class="integration-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <span class="integration-label">Auto-Created Dashboard</span>
+          </div>
+          <p class="integration-desc">10 panels covering error rates, latency percentiles, memory hits, graph depth, experience scores, and recommendation throughput.</p>
+          <div class="integration-detail">
+            <span class="detail-num">10</span>
+            <span class="detail-text">panels auto-created on startup</span>
+          </div>
+        </div>
+
+        <div class="integration-card fade-in">
+          <div class="integration-card-header">
+            <div class="integration-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <span class="integration-label">Default Alert Rules</span>
+          </div>
+          <p class="integration-desc">3 alert rules configured out of the box. Catches high error rates, latency spikes, and high failure counts across all services.</p>
+          <div class="integration-detail">
+            <span class="detail-num">3</span>
+            <span class="detail-text">default alert rules</span>
+          </div>
+        </div>
+
+        <div class="integration-card fade-in">
+          <div class="integration-card-header">
+            <div class="integration-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <span class="integration-label">Alert Intelligence Sidecar</span>
+          </div>
+          <p class="integration-desc">Polls SigNoz alerts every 30 seconds, enriches through the memory pipeline, and writes recommendations back as OTel spans.</p>
+          <div class="integration-detail">
+            <span class="detail-num">30s</span>
+            <span class="detail-text">poll interval</span>
+          </div>
+        </div>
+
+        <div class="integration-card fade-in">
+          <div class="integration-card-header">
+            <div class="integration-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <span class="integration-label">Saved Views &amp; Webhooks</span>
+          </div>
+          <p class="integration-desc">Pre-configured saved views for incident investigation. Webhook notification channel for sending recommendations to Slack, PagerDuty, or any endpoint.</p>
+          <div class="integration-detail">
+            <span class="detail-num">Auto</span>
+            <span class="detail-text">configured on startup</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- ─── CLI Showcase ─── -->
-  <section class="section section--gray" id="cli">
+  <section class="section" id="cli">
     <div class="container">
       <h2 class="section-title">Nine commands. One sidecar.</h2>
       <p class="section-sub">A CLI that works like a senior SRE sitting next to you.</p>
@@ -181,11 +386,11 @@
           </div>
           <div class="cmd-item" data-cmd="watch">
             <span class="cmd-name">siggy watch</span>
-            <span class="cmd-desc">Sidecar mode, enriches alerts with memory</span>
+            <span class="cmd-desc">Alert sidecar, enriches with memory pipeline</span>
           </div>
           <div class="cmd-item" data-cmd="serve">
             <span class="cmd-name">siggy serve</span>
-            <span class="cmd-desc">Start API server + sidecar</span>
+            <span class="cmd-desc">Start REST API server + sidecar</span>
           </div>
           <div class="cmd-item" data-cmd="up">
             <span class="cmd-name">siggy up</span>
@@ -201,7 +406,7 @@
           </div>
           <div class="cmd-item" data-cmd="demo">
             <span class="cmd-name">siggy demo</span>
-            <span class="cmd-desc">Ready-to-go demo, no SigNoz needed</span>
+            <span class="cmd-desc">Seeds 4 incidents, no SigNoz needed</span>
           </div>
         </div>
       </div>
@@ -209,7 +414,7 @@
   </section>
 
   <!-- ─── By the Numbers ─── -->
-  <section class="section" id="numbers">
+  <section class="section section--gray" id="numbers">
     <div class="container">
       <h2 class="section-title">Built for production</h2>
       <p class="section-sub">Battle-tested taxonomy, real benchmarks, measurable performance.</p>
@@ -239,6 +444,22 @@
           <span class="number-value">5</span>
           <span class="number-label">graph node types</span>
         </div>
+        <div class="number-card fade-in">
+          <span class="number-value">9</span>
+          <span class="number-label">CLI commands</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">6</span>
+          <span class="number-label">relationship types</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">10</span>
+          <span class="number-label">dashboard panels</span>
+        </div>
+        <div class="number-card fade-in">
+          <span class="number-value">3</span>
+          <span class="number-label">default alert rules</span>
+        </div>
       </div>
 
       <div class="tech-stack fade-in">
@@ -251,6 +472,7 @@
         <span class="tech-pill">Click</span>
         <span class="tech-pill">Pydantic</span>
         <span class="tech-pill">GROQ</span>
+        <span class="tech-pill">HuggingFace</span>
       </div>
     </div>
   </section>
@@ -264,17 +486,17 @@
       <div class="paths-grid">
         <div class="path-card fade-in">
           <div class="path-tag">Quickstart</div>
-          <p class="path-desc">Auto-detects Docker, Qdrant, SigNoz, and GROQ. Configures everything.</p>
-          <div class="path-code">siggy quickstart</div>
+          <p class="path-desc">Embedded Qdrant, auto-detects SigNoz and GROQ. Configures everything including dashboard and alert rules.</p>
+          <div class="path-code">pip install siggy-memory && siggy quickstart</div>
         </div>
         <div class="path-card fade-in">
           <div class="path-tag">Step by step</div>
-          <p class="path-desc">Full control over each connection and configuration.</p>
+          <p class="path-desc">Full control over each connection. Configure SigNoz URL, Qdrant endpoint, and LLM provider individually.</p>
           <div class="path-code">siggy init &amp;&amp; siggy serve</div>
         </div>
         <div class="path-card fade-in">
           <div class="path-tag">Demo mode</div>
-          <p class="path-desc">No SigNoz or Docker required. Just Python.</p>
+          <p class="path-desc">Seeds 4 realistic incidents. No SigNoz, no Docker. Just Python 3.10+.</p>
           <div class="path-code">siggy demo</div>
         </div>
       </div>

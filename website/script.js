@@ -1,23 +1,47 @@
 // ─── Copy to Clipboard ───
 function copyInstall() {
-  const text = 'pip install siggy';
+  const text = 'pip install siggy-memory';
   const el = document.getElementById('install-copy');
   const pill = document.getElementById('install-pill');
 
-  navigator.clipboard.writeText(text).then(() => {
-    el.textContent = 'copied';
-    el.classList.add('copied');
-    pill.style.pointerEvents = 'none';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      el.textContent = 'copied';
+      el.classList.add('copied');
+      pill.style.pointerEvents = 'none';
+      setTimeout(() => {
+        el.textContent = 'copy';
+        el.classList.remove('copied');
+        pill.style.pointerEvents = '';
+      }, 2000);
+    }).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
 
-    setTimeout(() => {
-      el.textContent = 'copy';
-      el.classList.remove('copied');
-      pill.style.pointerEvents = '';
-    }, 2000);
-  }).catch(() => {
-    el.textContent = 'copy failed';
-    setTimeout(() => { el.textContent = 'copy'; }, 1500);
-  });
+  function fallbackCopy() {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      el.textContent = 'copied';
+      el.classList.add('copied');
+      pill.style.pointerEvents = 'none';
+      setTimeout(() => {
+        el.textContent = 'copy';
+        el.classList.remove('copied');
+        pill.style.pointerEvents = '';
+      }, 2000);
+    } catch {
+      el.textContent = 'copy failed';
+      setTimeout(() => { el.textContent = 'copy'; }, 1500);
+    }
+    document.body.removeChild(ta);
+  }
 }
 
 // ─── Terminal Typing Animation ───
@@ -92,7 +116,6 @@ function typeTerminal() {
 
   isTyping = true;
 
-  // Type the prompt first
   typingInterval = setInterval(() => {
     if (charIdx < seq.prompt.length) {
       const ch = seq.prompt[charIdx];
@@ -112,7 +135,6 @@ function typeTerminal() {
       charIdx++;
     } else {
       clearInterval(typingInterval);
-      // Show output lines with delay
       let outputIdx = 0;
       const outputInterval = setInterval(() => {
         if (outputIdx < seq.output.length) {
@@ -122,7 +144,6 @@ function typeTerminal() {
         } else {
           clearInterval(outputInterval);
           isTyping = false;
-          // Switch to next sequence after a pause
           setTimeout(() => {
             currentSeq = (currentSeq + 1) % terminalSequences.length;
             typeTerminal();
@@ -133,7 +154,6 @@ function typeTerminal() {
   }, 40);
 }
 
-// Start terminal animation when visible
 let terminalStarted = false;
 
 // ─── Scroll Fade-In ───
@@ -154,10 +174,9 @@ function initFadeIn() {
 
 // ─── Nav Active State ───
 function initNavHighlight() {
-  const sections = ['features', 'how-it-works', 'cli', 'install'];
+  const sections = ['problem', 'features', 'how-it-works', 'architecture', 'cli', 'numbers', 'install'];
   const navPills = document.querySelectorAll('.nav-pill[data-section]');
 
-  // Assign data-section attributes
   sections.forEach((id) => {
     const link = document.querySelector(`.nav-pill[href="#${id}"]`);
     if (link) link.setAttribute('data-section', id);
