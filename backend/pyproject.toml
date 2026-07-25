@@ -3,8 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "siggy"
-version = "0.5.1"
+
+name = "siggy-memory"
+version = "0.5.3"
 description = "AI-powered observability memory layer for SigNoz"
 readme = "README.md"
 license = {text = "MIT"}
