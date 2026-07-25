@@ -82,12 +82,13 @@ def _make_trace_query(
         },
         "filters": {"items": filters or []},
         "groupBy": group_by or [],
-        "orderBy": order_by or [],
         "limit": limit,
         "stepInterval": 60,
         "expression": query_name,
         "disabled": False,
     }
+    if order_by:
+        q["orderBy"] = order_by
     return q
 
 
