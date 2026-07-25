@@ -197,7 +197,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                 aggregate_key="operation.name",
                 aggregate_data_type="string",
                 group_by=[{"key": "service.name", "dataType": "string"}],
-                order_by=[{"key": "count()", "dataType": "number", "order": "DESC"}],
             )
         ],
         width=6, x=0, y=row,
@@ -219,7 +218,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                     {"key": {"key": "status_code", "dataType": "string"}, "op": "=", "value": "STATUS_CODE_ERROR"},
                 ],
                 group_by=[{"key": "service.name", "dataType": "string"}],
-                order_by=[{"key": "count()", "dataType": "number", "order": "DESC"}],
             )
         ],
         width=6, x=6, y=row,
@@ -240,7 +238,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                 aggregate_key="duration_nano",
                 aggregate_data_type="float64",
                 group_by=[{"key": "service.name", "dataType": "string"}],
-                order_by=[{"key": "p95(duration_nano)", "dataType": "number", "order": "DESC"}],
             )
         ],
         width=6, x=0, y=row,
@@ -259,7 +256,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                 aggregate_key="operation.name",
                 aggregate_data_type="string",
                 group_by=[{"key": "operation.name", "dataType": "string"}],
-                order_by=[{"key": "count()", "dataType": "number", "order": "DESC"}],
                 limit=20,
             )
         ],
@@ -305,7 +301,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                     {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
                 ],
                 group_by=[{"key": "siggy.service", "dataType": "string"}],
-                order_by=[{"key": "count()", "dataType": "number", "order": "DESC"}],
             )
         ],
         width=6, x=6, y=row,
@@ -329,7 +324,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                     {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
                 ],
                 group_by=[{"key": "siggy.failure_type", "dataType": "string"}],
-                order_by=[{"key": "count()", "dataType": "number", "order": "DESC"}],
             )
         ],
         width=6, x=0, y=row,
@@ -351,7 +345,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                     {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
                 ],
                 group_by=[{"key": "siggy.confidence", "dataType": "string"}],
-                order_by=[{"key": "count()", "dataType": "number", "order": "DESC"}],
             )
         ],
         width=6, x=6, y=row,
@@ -371,7 +364,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                 filters=[
                     {"key": {"key": "severity_text", "dataType": "string"}, "op": "=", "value": "ERROR"},
                 ],
-                order_by=[{"key": "timestamp", "dataType": "string", "order": "DESC"}],
                 limit=20,
             )
         ],
@@ -393,7 +385,6 @@ def _build_all_widgets() -> tuple[list[dict], list[dict]]:
                 filters=[
                     {"key": {"key": "name", "dataType": "string"}, "op": "=", "value": "siggy.recommendation"},
                 ],
-                order_by=[{"key": "timestamp", "dataType": "string", "order": "DESC"}],
                 limit=20,
             )
         ],
